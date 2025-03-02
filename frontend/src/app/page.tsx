@@ -121,7 +121,7 @@ const BookingSystem = () => {
         alert(`預約成功！已預約 ${slotCount} 個時段，驗證信已發送至您的信箱。`);
         setSelectedSlots([]);
         // 刷新時段資料
-        refreshSchedule();
+        refreshSchedule(undefined, { revalidate: true });
       } else {
         alert("預約失敗：" + (result.error || "請稍後再試"));
       }
