@@ -5,7 +5,7 @@ import { BookingFormProps } from "@/types";
 
 export default function BookingForm({
     selectedSlots,
-    selectedDate,
+    // selectedDate,
     selectedRoom,
     roomName,
     onClose,

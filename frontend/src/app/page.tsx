@@ -7,6 +7,7 @@ import DateSelector from "@/components/DateSelector";
 import ScheduleGrid from "@/components/ScheduleGrid";
 import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
+import { BookingDataProps } from '@/types';
 
 const GOOGLE_SCRIPT_URL = "./api/proxy";
 
@@ -60,7 +61,7 @@ const BookingSystem = () => {
   }, [rooms, selectedRoom]);
 
   // 處理時段選擇
-  const handleSlotSelection = useCallback((slot: { date: any; time: any; endTime?: string | undefined; }) => {
+  const handleSlotSelection = useCallback((slot: { date: string; time: string; endTime?: string | undefined; }) => {
     setSelectedSlots(prevSelectedSlots => {
       // 檢查是否已選擇此時段
       const existingIndex = prevSelectedSlots.findIndex(
@@ -89,7 +90,7 @@ const BookingSystem = () => {
   };
 
   // 調整日期並強制重新獲取時間表
-  const adjustDate = (days: any) => {
+  const adjustDate = (days: number) => {
     const currentDate = new Date(selectedDate);
     currentDate.setDate(currentDate.getDate() + days);
     const newDate = currentDate.toISOString().split("T")[0];
@@ -99,7 +100,7 @@ const BookingSystem = () => {
   // 決定是否顯示加載中
   const isLoading = roomsLoading || scheduleLoading;
 
-  const handleBookingSubmit = async (bookingData: { multipleSlots: string[] | any[]; }) => {
+  const handleBookingSubmit = async (bookingData: BookingDataProps) => {
     try {
       // 顯示加載中
       const loadingKey = 'booking-submitting';
@@ -110,9 +111,9 @@ const BookingSystem = () => {
       const response = await fetch(`${GOOGLE_SCRIPT_URL}`, {
         method: "POST",
         body: JSON.stringify({
-          action: "submitBooking",
           isMultipleBooking: true,
           ...bookingData,
+          action: "submitBooking",
           multipleSlots: bookingData.multipleSlots || [bookingData],
         }),
         headers: { "Content-Type": "application/json" },
