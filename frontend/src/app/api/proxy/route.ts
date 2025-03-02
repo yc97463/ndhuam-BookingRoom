@@ -1,5 +1,10 @@
 export const dynamic = "force-dynamic"; // 確保 API 每次都執行，避免快取
 
+// 靜態匯出時跳過 API
+if (process.env.NEXT_PUBLIC_STATIC_EXPORT) {
+    throw new Error("Skipping API routes in static export.");
+}
+
 const id = "AKfycbxBTP30f0as0OYo1x3uArUNs_Ro1yCRwgVaMsUEmQCdqkyWKQT4fz76M_6UWHmU72hBVg";
 
 // 處理 GET 請求
