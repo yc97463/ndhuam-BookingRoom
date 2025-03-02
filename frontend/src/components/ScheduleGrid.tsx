@@ -3,7 +3,7 @@
 import React from "react";
 import { ScheduleGridProps, DayProps } from "@/types";
 
-export default function ScheduleGrid({ data, onSelectSlot }: ScheduleGridProps) {
+export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: ScheduleGridProps) {
     if (!data) return <p>無可用時段</p>;
 
     // 確保日期數據存在
@@ -42,6 +42,11 @@ export default function ScheduleGrid({ data, onSelectSlot }: ScheduleGridProps) 
         return `${nextHour.toString().padStart(2, '0')}:00`;
     };
 
+    // 檢查時段是否已被選擇
+    const isSlotSelected = (date: string, time: string): boolean => {
+        return selectedSlots.some(slot => slot.date === date && slot.time === time);
+    };
+
     return (
         <div className="overflow-x-auto">
             <div className="min-w-max grid grid-cols-8 gap-1 border p-2">
@@ -60,21 +65,25 @@ export default function ScheduleGrid({ data, onSelectSlot }: ScheduleGridProps) 
                             const isPending = data.pendingSlots?.[day.date]?.includes(time);
                             const expired = isExpired(day.date, time);
                             const withinOneHour = isWithinOneHour(day.date, time);
+                            const selected = isSlotSelected(day.date, time);
 
                             let status = '';
                             let statusText = '';
 
                             if (expired || withinOneHour) {
-                                status = 'bg-gray-200 text-gray-500';
+                                status = 'bg-gray-200 text-gray-500 border-2 border-gray-300';
                                 statusText = '已過期';
                             } else if (isBooked) {
-                                status = 'bg-red-200 text-red-800';
+                                status = 'bg-red-200 text-red-800 border-2 border-gray-300';
                                 statusText = '已預約';
                             } else if (isPending) {
-                                status = 'bg-orange-100 text-orange-700';
+                                status = 'bg-orange-100 text-orange-700 border-2 border-orange-500';
                                 statusText = '確認中';
+                            } else if (selected) {
+                                status = 'bg-blue-200 text-blue-800 cursor-pointer border-2 border-blue-500';
+                                statusText = '已選擇';
                             } else {
-                                status = 'bg-green-200 text-green-800 cursor-pointer hover:bg-green-300';
+                                status = 'bg-white text-gray-700 cursor-pointer hover:bg-gray-200 border-2 border-gray-300';
                                 statusText = '可預約';
                             }
 

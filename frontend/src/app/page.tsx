@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useSWR, { mutate } from 'swr';
 import RoomSelector from "@/components/RoomSelector";
 import DateSelector from "@/components/DateSelector";
@@ -9,12 +9,13 @@ import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 
 const GOOGLE_SCRIPT_URL = "./api/proxy";
+
 const fetcher = (url: string | URL | Request) => fetch(url).then(res => res.json());
 
 const BookingSystem = () => {
+  const [selectedSlots, setSelectedSlots] = useState<Array<{ date: string; time: string; endTime?: string }>>([]);
   const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; endTime?: string | undefined } | null>(null);
 
   // 使用 SWR 獲取教室列表
   const {
@@ -22,13 +23,13 @@ const BookingSystem = () => {
     error: roomsError,
     isLoading: roomsLoading
   } = useSWR(`${GOOGLE_SCRIPT_URL}?action=getRooms`, fetcher, {
-    revalidateOnFocus: false, // 避免頁面獲取焦點時重新獲取教室列表
-    dedupingInterval: 600000 // 10分鐘內不重複獲取教室列表
+    revalidateOnFocus: false,
+    dedupingInterval: 600000
   });
 
-  // 使用 SWR 獲取預約時段資料，在日期或教室變化時重新獲取
+  // 使用 SWR 獲取預約時段資料
   const scheduleKey = selectedRoom
-    ? `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}&firstDay=Monday`
+    ? `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}`
     : null;
 
   const {
@@ -37,14 +38,18 @@ const BookingSystem = () => {
     isLoading: scheduleLoading,
     mutate: refreshSchedule
   } = useSWR(scheduleKey, fetcher, {
-    revalidateOnFocus: true, // 頁面獲取焦點時重新驗證，以獲取最新預約狀態
-    dedupingInterval: 5000,  // 5秒內不重複請求相同的數據
+    revalidateOnFocus: true,
+    dedupingInterval: 2000,
     onSuccess: (data) => {
-      console.log('Successfully fetched schedule data:', data);
+      console.log('Successfully fetched schedule data for date:', selectedDate);
     },
     onError: (err) => {
       console.error('Error fetching schedule data:', err);
-    }
+    },
+    revalidateIfStale: true,
+    revalidateOnMount: true,
+    refreshInterval: 0,
+    shouldRetryOnError: true
   });
 
   // 選擇第一個教室作為默認值
@@ -54,26 +59,72 @@ const BookingSystem = () => {
     }
   }, [rooms, selectedRoom]);
 
+  // 處理時段選擇
+  const handleSlotSelection = useCallback((slot: { date: any; time: any; endTime?: string | undefined; }) => {
+    setSelectedSlots(prevSelectedSlots => {
+      // 檢查是否已選擇此時段
+      const existingIndex = prevSelectedSlots.findIndex(
+        s => s.date === slot.date && s.time === slot.time
+      );
+
+      if (existingIndex >= 0) {
+        // 已選擇，則移除此時段
+        return prevSelectedSlots.filter((_, index) => index !== existingIndex);
+      } else {
+        // 未選擇，則添加此時段
+        return [...prevSelectedSlots, slot];
+      }
+    });
+  }, []);
+
+  // DateSelector 處理函數
+  const handleDateChange = (newDate: React.SetStateAction<string>) => {
+    setSelectedDate(newDate);
+
+    if (selectedRoom) {
+      const newScheduleKey = `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${newDate}&room=${selectedRoom}`;
+      console.log('Refreshing schedule with new date:', newDate);
+      mutate(newScheduleKey, undefined, { revalidate: true });
+    }
+  };
+
+  // 調整日期並強制重新獲取時間表
+  const adjustDate = (days: any) => {
+    const currentDate = new Date(selectedDate);
+    currentDate.setDate(currentDate.getDate() + days);
+    const newDate = currentDate.toISOString().split("T")[0];
+    handleDateChange(newDate);
+  };
+
   // 決定是否顯示加載中
   const isLoading = roomsLoading || scheduleLoading;
 
-  const handleBookingSubmit = async (bookingData: any) => {
+  const handleBookingSubmit = async (bookingData: { multipleSlots: string[] | any[]; }) => {
     try {
       // 顯示加載中
       const loadingKey = 'booking-submitting';
       mutate(loadingKey, true, false);
 
+      console.log('Submitting booking data:', bookingData); // 檢查數據格式
+
       const response = await fetch(`${GOOGLE_SCRIPT_URL}`, {
         method: "POST",
-        body: JSON.stringify({ action: "submitBooking", ...bookingData }),
+        body: JSON.stringify({
+          action: "submitBooking",
+          isMultipleBooking: true,
+          ...bookingData,
+          multipleSlots: bookingData.multipleSlots || [bookingData],
+        }),
         headers: { "Content-Type": "application/json" },
       });
 
       const result = await response.json();
+      console.log('Booking response:', result); // 檢查回應
 
       if (result.success) {
-        alert("預約成功！驗證信已發送至您的信箱。");
-        setSelectedSlot(null);
+        const slotCount = bookingData.multipleSlots?.length || 1;
+        alert(`預約成功！已預約 ${slotCount} 個時段，驗證信已發送至您的信箱。`);
+        setSelectedSlots([]);
         // 刷新時段資料
         refreshSchedule();
       } else {
@@ -85,20 +136,6 @@ const BookingSystem = () => {
     } catch (err) {
       console.error('Error submitting booking:', err);
       alert("預約失敗，請稍後再試。");
-    }
-  };
-
-  // 調整日期並強制重新獲取時間表
-  const adjustDate = (days: number) => {
-    const currentDate = new Date(selectedDate);
-    currentDate.setDate(currentDate.getDate() + days);
-    const newDate = currentDate.toISOString().split("T")[0];
-    setSelectedDate(newDate);
-
-    // 如果已經選擇了教室，則明確刷新時間表
-    if (selectedRoom) {
-      const newKey = `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${newDate}&room=${selectedRoom}`;
-      mutate(newKey);
     }
   };
 
@@ -130,7 +167,7 @@ const BookingSystem = () => {
               >
                 -7
               </button>
-              <DateSelector selectedDate={selectedDate} onChange={setSelectedDate} />
+              <DateSelector selectedDate={selectedDate} onChange={handleDateChange} />
               <button
                 className="border border-gray-300 px-3 py-2 rounded hover:bg-gray-100"
                 onClick={() => adjustDate(7)}
@@ -159,15 +196,60 @@ const BookingSystem = () => {
         ) : scheduleData ? (
           <ScheduleGrid
             data={scheduleData}
-            onSelectSlot={setSelectedSlot}
+            selectedSlots={selectedSlots}
+            onSelectSlot={handleSlotSelection}
           />
         ) : (
           <p>無可用時段</p>
         )}
       </div>
 
-      {selectedSlot && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
+      {selectedSlots.length > 0 && (
+        <div className="mt-4 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <h3 className="font-semibold text-blue-700">已選擇 {selectedSlots.length} 個時段</h3>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedSlots.map((slot, index) => (
+              <div
+                key={`${slot.date}-${slot.time}`}
+                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+              >
+                <span>{slot.date} {slot.time}-{slot.endTime}</span>
+                <button
+                  className="ml-2 text-blue-600 hover:text-blue-800"
+                  onClick={() => {
+                    setSelectedSlots(slots => slots.filter((_, i) => i !== index));
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              onClick={() => {
+                // 檢查是否選擇了時段
+                if (selectedSlots.length > 0) {
+                  // 顯示預約表單
+                  document.getElementById('booking-form-section')?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              預約所選時段
+            </button>
+            <button
+              className="ml-2 border border-gray-300 px-4 py-2 rounded text-gray-600 hover:bg-gray-100 transition-colors"
+              onClick={() => setSelectedSlots([])}
+            >
+              清除選擇
+            </button>
+          </div>
+        </div>
+      )}
+
+      {selectedSlots.length > 0 && (
+        <div id="booking-form-section" className="mt-6 p-4 border rounded bg-gray-50">
           <h2 className="text-lg font-bold mb-4">預約申請表單</h2>
 
           <div className="bg-white p-4 border rounded mb-4">
@@ -180,11 +262,11 @@ const BookingSystem = () => {
           </div>
 
           <BookingForm
-            selectedSlot={selectedSlot}
+            selectedSlots={selectedSlots}
             selectedDate={selectedDate}
             selectedRoom={selectedRoom}
             roomName={rooms?.find((room: { roomId: string; }) => room.roomId === selectedRoom)?.roomName || selectedRoom}
-            onClose={() => setSelectedSlot(null)}
+            onClose={() => setSelectedSlots([])}
             onSubmit={handleBookingSubmit}
           />
         </div>

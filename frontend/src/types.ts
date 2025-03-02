@@ -8,7 +8,10 @@ export interface DayProps {
     dayOfWeek: string;
 }
 
+
 export interface BookingDataProps {
+    action: string;
+    isMultipleBooking?: boolean;
     name: string;
     email: string;
     phone: string;
@@ -16,14 +19,25 @@ export interface BookingDataProps {
     timeSlot: string;
     roomId: string;
     purpose: string;
-}
-
-export interface BookingFormProps {
-    selectedSlot: {
+    multipleSlots: Array<{
         date: string;
         time: string;
         endTime?: string;
-    };
+        name: string;
+        email: string;
+        phone: string;
+        roomId: string;
+        purpose: string;
+        action: string;
+    }>;
+}
+
+export interface BookingFormProps {
+    selectedSlots: Array<{
+        date: string;
+        time: string;
+        endTime?: string;
+    }>;
     selectedDate: string;
     selectedRoom: string;
     roomName?: string;
@@ -38,8 +52,10 @@ export interface ScheduleGridProps {
         bookedSlots: { [date: string]: string[] };
         pendingSlots?: { [date: string]: string[] };
     };
+    selectedSlots: Array<{ date: string; time: string; endTime?: string }>;
     onSelectSlot: (slot: { date: string; time: string; endTime?: string }) => void;
 }
+
 
 export interface LoadingMaskProps {
     loading: boolean;
