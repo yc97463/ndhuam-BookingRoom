@@ -53,6 +53,9 @@ jobs:
       - name: Move output to root
         run: mv frontend/out public  # 📌 把 `/frontend/out` 移動到 `/public`
 
+      - name: Create CNAME file  # 📌 加入這一行來設定 CNAME
+        run: echo "ndhuam-bookingroom.dstw.dev" > public/CNAME
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
