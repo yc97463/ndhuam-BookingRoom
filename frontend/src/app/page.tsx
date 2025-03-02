@@ -162,18 +162,19 @@ const BookingSystem = () => {
             <div className="flex items-center gap-2">
               <label className="font-semibold">選擇日期：</label>
               <button
-                className="border border-gray-300 px-3 py-2 rounded hover:bg-gray-100"
+                className="border border-gray-300 px-3 py-2 rounded cursor-pointer  hover:bg-gray-100"
                 onClick={() => adjustDate(-7)}
               >
                 -7
               </button>
               <DateSelector selectedDate={selectedDate} onChange={handleDateChange} />
               <button
-                className="border border-gray-300 px-3 py-2 rounded hover:bg-gray-100"
+                className="border border-gray-300 px-3 py-2 rounded cursor-pointer  hover:bg-gray-100"
                 onClick={() => adjustDate(7)}
               >
                 +7
               </button>
+
             </div>
 
             <div className="flex items-center">
@@ -215,7 +216,7 @@ const BookingSystem = () => {
               >
                 <span>{slot.date} {slot.time}-{slot.endTime}</span>
                 <button
-                  className="ml-2 text-blue-600 hover:text-blue-800"
+                  className="ml-2 text-blue-600 hover:text-blue-800 cursor-pointer"
                   onClick={() => {
                     setSelectedSlots(slots => slots.filter((_, i) => i !== index));
                   }}

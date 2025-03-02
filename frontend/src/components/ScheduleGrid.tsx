@@ -59,7 +59,7 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
 
                 {data.timeSlots.map((time: string) => (
                     <React.Fragment key={time}>
-                        <div className="p-2 border text-center">{time}</div>
+                        <div className="p-2 bg-gray-100 border-l-4 border-gray-300 text-center cursor-default">{time}</div>
                         {data.days.map((day: DayProps) => {
                             const isBooked = data.bookedSlots[day.date]?.includes(time);
                             const isPending = data.pendingSlots?.[day.date]?.includes(time);
@@ -71,19 +71,19 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
                             let statusText = '';
 
                             if (expired || withinOneHour) {
-                                status = 'bg-gray-200 text-gray-500 border-2 border-gray-300';
+                                status = 'bg-gray-100 text-gray-500 border-1 border-gray-300 cursor-not-allowed';
                                 statusText = '已過期';
                             } else if (isBooked) {
-                                status = 'bg-red-200 text-red-800 border-2 border-gray-300';
+                                status = 'bg-red-100 text-red-700 border-1 border-gray-300 cursor-not-allowed';
                                 statusText = '已預約';
                             } else if (isPending) {
-                                status = 'bg-orange-100 text-orange-700 border-2 border-orange-500';
+                                status = 'bg-orange-100 text-orange-700 border-1 border-gray-300 cursor-not-allowed';
                                 statusText = '確認中';
                             } else if (selected) {
-                                status = 'bg-blue-200 text-blue-800 cursor-pointer border-2 border-blue-500';
+                                status = 'bg-green-100 text-green-800 cursor-pointer border-1 border-green-500';
                                 statusText = '已選擇';
                             } else {
-                                status = 'bg-white text-gray-700 cursor-pointer hover:bg-gray-200 border-2 border-gray-300';
+                                status = 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100 border-1 border-gray-300';
                                 statusText = '可預約';
                             }
 
