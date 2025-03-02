@@ -233,7 +233,7 @@ const BookingSystem = () => {
           </div>
           <div className="mt-3 flex justify-end">
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors cursor-pointer"
               onClick={() => {
                 // 檢查是否選擇了時段
                 if (selectedSlots.length > 0) {
@@ -245,7 +245,7 @@ const BookingSystem = () => {
               預約所選時段
             </button>
             <button
-              className="ml-2 border border-gray-300 px-4 py-2 rounded text-gray-600 hover:bg-gray-100 transition-colors"
+              className="ml-2 border border-gray-300 px-4 py-2 rounded text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => setSelectedSlots([])}
             >
               清除選擇
@@ -275,6 +275,7 @@ const BookingSystem = () => {
             onClose={() => setSelectedSlots([])}
             onSubmit={handleBookingSubmit}
           />
+          <LoadingMask loading={isLoading} />
         </div>
       )}
     </div>

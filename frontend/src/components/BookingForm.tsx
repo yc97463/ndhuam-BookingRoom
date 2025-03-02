@@ -35,7 +35,7 @@ export default function BookingForm({
         }
 
         // Email 驗證
-        if (!userData.email.endsWith('@ndhu.edu.tw') && !userData.email.endsWith('@gms.ndhu.edu.tw')) {
+        if (!userData.email.endsWith('ndhu.edu.tw')) {
             setErrorMessage('請使用東華大學校園信箱');
             return;
         }
@@ -145,14 +145,14 @@ export default function BookingForm({
             <div className="flex gap-4 mt-2">
                 <button
                     type="submit"
-                    className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors"
+                    className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors cursor-pointer"
                 >
                     確認預約 ({selectedSlots.length} 個時段)
                 </button>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-6 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition-colors"
+                    className="px-6 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                     取消
                 </button>
