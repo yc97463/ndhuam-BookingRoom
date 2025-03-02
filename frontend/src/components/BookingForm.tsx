@@ -44,7 +44,7 @@ export default function BookingForm({
         const multipleSlots = selectedSlots.map(slot => ({
             ...userData,
             date: slot.date,
-            timeSlot: slot.time,
+            time: slot.time,
             action: "submitBooking"
         }));
 
