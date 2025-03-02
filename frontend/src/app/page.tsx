@@ -42,6 +42,7 @@ const BookingSystem = () => {
     revalidateOnFocus: true,
     dedupingInterval: 2000,
     onSuccess: (data) => {
+      console.log(data);
       console.log('Successfully fetched schedule data for date:', selectedDate);
     },
     onError: (err) => {
