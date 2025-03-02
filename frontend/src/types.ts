@@ -71,3 +71,39 @@ export interface DateSelectorProps {
     selectedDate: string;
     onChange: (date: string) => void;
 }
+
+export interface DateNavigatorProps {
+    selectedDate: string;
+    onChange: (date: string) => void;
+    onAdjust: (days: number) => void;
+}
+
+export interface RefreshButtonProps {
+    onRefresh: () => void;
+    isLoading?: boolean;
+}
+
+export interface SelectedSlotsProps {
+    slots: Array<{ date: string; time: string; endTime?: string }>;
+    onRemoveSlot: (index: number) => void;
+    onClearAll: () => void;
+    onProceed: () => void;
+}
+
+export interface SystemHeaderProps {
+    rooms: any[];
+    selectedRoom: string;
+    selectedDate: string;
+    roomsError: any;
+    onRoomSelect: (roomId: string) => void;
+    onDateChange: (date: string) => void;
+    onDateAdjust: (days: number) => void;
+    onRefresh: () => void;
+    isRefreshing: boolean;
+}
+
+export interface BookingSystemProps {
+    time: string;
+    date: string;
+
+}
