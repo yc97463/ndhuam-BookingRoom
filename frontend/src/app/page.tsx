@@ -11,7 +11,7 @@ import { BookingDataProps } from '@/types';
 
 // const GOOGLE_SCRIPT_URL = "./api/proxy";
 
-const id = "AKfycbxBTP30f0as0OYo1x3uArUNs_Ro1yCRwgVaMsUEmQCdqkyWKQT4fz76M_6UWHmU72hBVg";
+// const id = "AKfycbxBTP30f0as0OYo1x3uArUNs_Ro1yCRwgVaMsUEmQCdqkyWKQT4fz76M_6UWHmU72hBVg";
 const GOOGLE_SCRIPT_URL = `https://ndhuam-bookingroom-proxy.deershark-tech.workers.dev/`;
 
 const fetcher = (url: string | URL | Request) => fetch(url).then(res => res.json());
