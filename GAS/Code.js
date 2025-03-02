@@ -302,6 +302,14 @@ ${verifyUrl}
 - 聯絡電話：${data.phone}
 - 預約用途：${data.purpose}
 - 預約時段數量：${slotCount}
+- 預約時段：
+${data.multipleSlots
+      .sort((a, b) => new Date(a.date) - new Date(b.date) || a.time.toString().localeCompare(b.time.toString()))
+      .map(slot => {
+        const endTime = `${(parseInt(slot.time.split(":")[0]) + 1).toString().padStart(2, "0")}:00`;
+        return `  - 日期：${slot.date} 時段：${slot.time} - ${endTime}`;
+      })
+      .join("\n")}
 
 此驗證連結將在48小時後失效。如有任何問題，請聯絡應數系辦。
 
@@ -358,10 +366,15 @@ function processGroupVerification(token) {
     const bookingIds = groupData[8].split(",");  // BookingIDs 在第9列
     const bookingsSheet = getSpreadsheet().getSheetByName("Bookings");
     const bookingsData = bookingsSheet.getDataRange().getValues();
+    const bookedSlots = [];
 
     for (let i = 1; i < bookingsData.length; i++) {
       if (bookingIds.includes(bookingsData[i][0])) {  // 檢查 BookingID
         bookingsSheet.getRange(i + 1, 9).setValue("confirmed");  // 更新狀態欄位
+        bookedSlots.push({
+          date: bookingsData[i][4],
+          time: bookingsData[i][5]
+        });
       }
     }
 
@@ -370,7 +383,8 @@ function processGroupVerification(token) {
       groupData[2],  // Name
       groupData[1],  // Email
       bookingIds.length,
-      groupData[4]   // Purpose
+      groupData[4],  // Purpose
+      bookedSlots    // Booked slots
     );
 
     return createHtmlResponse(
@@ -444,8 +458,39 @@ function createHtmlResponse(title, message) {
   return HtmlService.createHtmlOutput(html);
 }
 
+function generateBookingSummary(bookedSlots) {
+  if (!bookedSlots || bookedSlots.length === 0) {
+    return "- 預約時段：無";
+  }
+
+  // 📌 按日期與時間排序
+  bookedSlots.sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    if (dateA !== dateB) return dateA - dateB; // 先比較日期
+    return new Date(a.time).getTime() - new Date(b.time).getTime(); // 再比較時間
+  });
+
+  // 📌 格式化輸出（加入結束時間）
+  const formattedBookedSlots = bookedSlots
+    .map(slot => {
+      const formattedDate = Utilities.formatDate(new Date(slot.date), "Asia/Taipei", "yyyy-MM-dd");
+      const formattedTime = Utilities.formatDate(new Date(slot.time), "Asia/Taipei", "HH:mm");
+
+      // 計算結束時間 (+1 小時)
+      let hour = parseInt(formattedTime.split(":")[0], 10);
+      const endTime = `${(hour + 1).toString().padStart(2, "0")}:00`;
+
+      return `   - 日期：${formattedDate} 時段：${formattedTime} - ${endTime}`;
+    })
+    .join("\n");
+
+  return `${formattedBookedSlots}`;
+}
+
 // 發送群組確認郵件
-function sendGroupConfirmationEmail(name, email, slotCount, purpose) {
+function sendGroupConfirmationEmail(name, email, slotCount, purpose, bookedSlots) {
+  // 使用 Gmail 服務發送郵件
   const subject = "應數系空間預約 - 預約確認通知";
 
   const body = `${name} 您好，
@@ -457,6 +502,8 @@ function sendGroupConfirmationEmail(name, email, slotCount, purpose) {
 - 聯絡信箱：${email}
 - 預約用途：${purpose}
 - 預約時段數量：${slotCount}
+- 預約時段：
+${generateBookingSummary(bookedSlots)}
 
 請於使用時間前往系辦領取鑰匙。如需取消預約，請至少提前24小時通知系辦。
 
