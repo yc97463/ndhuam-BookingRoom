@@ -221,7 +221,6 @@ function createGroupBooking(data, groupId) {
     bookingId,            // 預約ID
     data.name,            // 姓名
     data.email,           // 郵箱
-    data.organization,    // 組織
     data.phone,           // 電話
     data.date,            // 日期
     data.time,        // 時段
@@ -229,7 +228,8 @@ function createGroupBooking(data, groupId) {
     data.purpose,         // 用途
     "pending_group_verify", // 狀態標記為群組驗證中
     groupId,              // 使用群組ID作為驗證令牌
-    now                   // 創建時間
+    now,                   // 創建時間
+    data.organization,    // 組織
   ];
 
   sheet.appendRow(newRow);
@@ -250,13 +250,13 @@ function createBookingGroup(groupId, data, verifyToken, bookingIds) {
     groupId,                     // 群組ID
     data.email,                  // 郵箱
     data.name,                   // 姓名
-    data.organization,           // 組織
     data.phone,                  // 電話
     data.purpose,                // 用途
     now,                         // 創建時間
     verifyToken,                 // 驗證令牌
     "pending_verify",            // 狀態
-    bookingIds.join(",")         // 關聯的預約ID，以逗號分隔
+    bookingIds.join(","),         // 關聯的預約ID，以逗號分隔
+    data.organization,           // 組織
   ];
 
   sheet.appendRow(newRow);
@@ -271,13 +271,13 @@ function createBookingGroupsSheet() {
     "GroupID",
     "Email",
     "Name",
-    "Organization",
     "Phone",
     "Purpose",
     "CreatedAt",
     "VerifyToken",
     "Status",
-    "BookingIDs"
+    "BookingIDs",
+    "Organization",
   ]);
   return sheet;
 }
@@ -609,7 +609,6 @@ function createBooking(data) {
     Utilities.getUuid(),
     data.name,
     data.email,
-    data.organization,
     data.phone,
     data.date,
     data.timeSlot,
@@ -617,7 +616,8 @@ function createBooking(data) {
     data.purpose,
     "pending_verify",
     verifyToken,
-    now
+    now,
+    data.organization,
   ];
 
   sheet.appendRow(newRow);
