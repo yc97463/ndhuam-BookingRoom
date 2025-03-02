@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"; // 確保 API 每次都執行，避免快取
 
-const id = "AKfycbxzLMMs76Zl0dw7Uy362rZ2pu_n5UDBoo8sGn8-LVEkVegqgiAwdWQTglgr1_mWCa71jQ";
+const id = "AKfycbxBTP30f0as0OYo1x3uArUNs_Ro1yCRwgVaMsUEmQCdqkyWKQT4fz76M_6UWHmU72hBVg";
 
 // 處理 GET 請求
 export async function GET(request: Request) {
