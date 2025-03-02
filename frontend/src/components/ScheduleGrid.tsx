@@ -6,6 +6,21 @@ import { ScheduleGridProps, DayProps } from "@/types";
 export default function ScheduleGrid({ data, onSelectSlot }: ScheduleGridProps) {
     if (!data) return <p>無可用時段</p>;
 
+    // 確保日期數據存在
+    if (!data.days || !Array.isArray(data.days) || data.days.length === 0) {
+        return <p>無可用日期</p>;
+    }
+
+    // 確保時段數據存在
+    if (!data.timeSlots || !Array.isArray(data.timeSlots) || data.timeSlots.length === 0) {
+        return <p>無可用時段</p>;
+    }
+
+    // 確保預約數據存在
+    if (!data.bookedSlots) {
+        data.bookedSlots = {};
+    }
+
     // 檢查時段是否已過期
     const isExpired = (date: string, time: string): boolean => {
         const currentTime = new Date();
@@ -32,7 +47,7 @@ export default function ScheduleGrid({ data, onSelectSlot }: ScheduleGridProps) 
             <div className="min-w-max grid grid-cols-8 gap-1 border p-2">
                 <div className="p-2 bg-gray-100 font-bold text-center">時間</div>
                 {data.days.map((day: DayProps) => (
-                    <div key={day.date} className="p-2 bg-gray-100 font-bold text-center">
+                    <div key={`header-${day.date}`} className="p-2 bg-gray-100 font-bold text-center">
                         {day.dayOfWeek} <br /> {day.date}
                     </div>
                 ))}

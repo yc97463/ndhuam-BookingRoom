@@ -1,12 +1,21 @@
+export const dynamic = "force-dynamic"; // 確保 API 每次都執行，避免快取
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get("action") || "";
+    const params = new URLSearchParams(searchParams);
+    const action = params.get("action") || "";
+    params.delete("action");
+    const queryString = params.toString();
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySTwT7heZuvjzoU_JXMsaGeEm8I2xzilzlRTBFpsvgm-z5Z7qvOdvRhi3RvoZJJH3Kvg/exec";
+    const id = "AKfycbwFbIhVzVNMl9kQsAt7HDPxOfEIBOkrLF6Wtw5tflJFvNJecorIoQVRuGGiEcEi5dZliQ";
+    const GOOGLE_SCRIPT_URL = `https://script.google.com/macros/s/${id}/exec`;
 
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=${action}`, {
+    const requestUrl = `${GOOGLE_SCRIPT_URL}?action=${action}&${queryString}`;
+    console.log(`GET ${requestUrl}`);
+
+    const response = await fetch(`${requestUrl}`, {
         headers: {
             "Content-Type": "application/json",
+            "Cache-Control": "no-store",
         },
     });
 

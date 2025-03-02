@@ -9,32 +9,43 @@ import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 
 const GOOGLE_SCRIPT_URL = "./api/proxy";
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string | URL | Request) => fetch(url).then(res => res.json());
 
 const BookingSystem = () => {
   const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; endTime?: string | undefined } | null>(null);
 
   // 使用 SWR 獲取教室列表
   const {
     data: rooms,
     error: roomsError,
     isLoading: roomsLoading
-  } = useSWR(`${GOOGLE_SCRIPT_URL}?action=getRooms`, fetcher);
+  } = useSWR(`${GOOGLE_SCRIPT_URL}?action=getRooms`, fetcher, {
+    revalidateOnFocus: false, // 避免頁面獲取焦點時重新獲取教室列表
+    dedupingInterval: 600000 // 10分鐘內不重複獲取教室列表
+  });
 
-  // 使用 SWR 獲取預約時段資料
+  // 使用 SWR 獲取預約時段資料，在日期或教室變化時重新獲取
+  const scheduleKey = selectedRoom
+    ? `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}&firstDay=Monday`
+    : null;
+
   const {
     data: scheduleData,
     error: scheduleError,
     isLoading: scheduleLoading,
     mutate: refreshSchedule
-  } = useSWR(
-    selectedRoom
-      ? `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}`
-      : null,
-    fetcher
-  );
+  } = useSWR(scheduleKey, fetcher, {
+    revalidateOnFocus: true, // 頁面獲取焦點時重新驗證，以獲取最新預約狀態
+    dedupingInterval: 5000,  // 5秒內不重複請求相同的數據
+    onSuccess: (data) => {
+      console.log('Successfully fetched schedule data:', data);
+    },
+    onError: (err) => {
+      console.error('Error fetching schedule data:', err);
+    }
+  });
 
   // 選擇第一個教室作為默認值
   useEffect(() => {
@@ -77,10 +88,18 @@ const BookingSystem = () => {
     }
   };
 
-  const adjustDate = (days: any) => {
+  // 調整日期並強制重新獲取時間表
+  const adjustDate = (days: number) => {
     const currentDate = new Date(selectedDate);
     currentDate.setDate(currentDate.getDate() + days);
-    setSelectedDate(currentDate.toISOString().split("T")[0]);
+    const newDate = currentDate.toISOString().split("T")[0];
+    setSelectedDate(newDate);
+
+    // 如果已經選擇了教室，則明確刷新時間表
+    if (selectedRoom) {
+      const newKey = `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${newDate}&room=${selectedRoom}`;
+      mutate(newKey);
+    }
   };
 
   return (
