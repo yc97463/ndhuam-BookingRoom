@@ -26,7 +26,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                     </div>
                 ))}
             </div>
-            {/* <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex justify-end hidden">
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors cursor-pointer"
                     onClick={onProceed}
@@ -39,7 +39,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                 >
                     清除選擇
                 </button>
-            </div> */}
+            </div>
         </div>
     );
 };

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { BookingFormProps } from "@/types";
-import SelectedSlots from "./SelectedSlots";
 
 export default function BookingForm({
     selectedSlots,
