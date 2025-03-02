@@ -142,21 +142,32 @@ const BookingSystem = () => {
         )}
       </div>
 
-      {/* 已選擇時段區域 */}
-      <SelectedSlots
-        slots={selectedSlots}
-        onRemoveSlot={(index) => {
-          setSelectedSlots(slots => slots.filter((_, i) => i !== index));
-        }}
-        onClearAll={() => setSelectedSlots([])}
-        onProceed={() => {
-          document.getElementById('booking-form-section')?.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
-
       {/* 預約表單區域 */}
       {selectedSlots.length > 0 && (
         <div id="booking-form-section" className="mt-6 p-4 border rounded bg-gray-50">
+          <h2 className="text-lg font-bold mb-4">預約申請表單</h2>
+
+          <div className="bg-white p-4 border rounded mb-4">
+            <h3 className="font-bold mb-2">預約說明</h3>
+            <ul className="list-disc pl-5 mb-3">
+              <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
+              <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
+            </ul>
+            <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
+          </div>
+
+          {/* 已選擇時段區域 */}
+          <SelectedSlots
+            slots={selectedSlots}
+            onRemoveSlot={(index) => {
+              setSelectedSlots(slots => slots.filter((_, i) => i !== index));
+            }}
+            onClearAll={() => setSelectedSlots([])}
+            onProceed={() => {
+              document.getElementById('booking-form-section')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+
           <BookingForm
             selectedSlots={selectedSlots}
             selectedDate={selectedDate}

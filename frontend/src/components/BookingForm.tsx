@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { BookingFormProps } from "@/types";
+import SelectedSlots from "./SelectedSlots";
 
 export default function BookingForm({
     selectedSlots,
@@ -66,7 +67,7 @@ export default function BookingForm({
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
+            {/* <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
                 <h3 className="font-bold text-blue-800">多時段預約</h3>
                 <p className="text-blue-600">您已選擇 {selectedSlots.length} 個時段進行預約</p>
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -76,7 +77,7 @@ export default function BookingForm({
                         </span>
                     ))}
                 </div>
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-2">
                 <label htmlFor="name" className="font-semibold">姓名：</label>
@@ -86,7 +87,6 @@ export default function BookingForm({
                     placeholder="請輸入您的姓名"
                     required
                     className="border p-2 w-full rounded"
-                    defaultValue={'咕嚕'}
                 />
             </div>
 
@@ -99,7 +99,6 @@ export default function BookingForm({
                     placeholder="請輸入東華大學校園信箱"
                     required
                     className="border p-2 w-full rounded"
-                    defaultValue={'411111226@gms.ndhu.edu.tw'}
                 />
                 <small className="text-gray-500">必須使用 @ndhu.edu.tw 或 @gms.ndhu.edu.tw 信箱</small>
             </div>
@@ -112,7 +111,6 @@ export default function BookingForm({
                     placeholder="請輸入您的聯絡電話"
                     required
                     className="border p-2 w-full rounded"
-                    defaultValue={'0987654321'}
                 />
             </div>
 
@@ -125,7 +123,6 @@ export default function BookingForm({
                     rows={3}
                     required
                     className="border p-2 w-full rounded"
-                    defaultValue={'預約空間'}
                 ></textarea>
             </div>
 
