@@ -19,9 +19,14 @@ export interface BookingDataProps {
 }
 
 export interface BookingFormProps {
-    selectedSlot: { time: string };
+    selectedSlot: {
+        date: string;
+        time: string;
+        endTime?: string;
+    };
     selectedDate: string;
     selectedRoom: string;
+    roomName?: string;
     onClose: () => void;
     onSubmit: (data: BookingDataProps) => void;
 }
@@ -31,8 +36,9 @@ export interface ScheduleGridProps {
         days: DayProps[];
         timeSlots: string[];
         bookedSlots: { [date: string]: string[] };
+        pendingSlots?: { [date: string]: string[] };
     };
-    onSelectSlot: (slot: { date: string; time: string }) => void;
+    onSelectSlot: (slot: { date: string; time: string; endTime?: string }) => void;
 }
 
 export interface LoadingMaskProps {
