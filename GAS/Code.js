@@ -221,6 +221,7 @@ function createGroupBooking(data, groupId) {
     bookingId,            // 預約ID
     data.name,            // 姓名
     data.email,           // 郵箱
+    data.organization,    // 組織
     data.phone,           // 電話
     data.date,            // 日期
     data.time,        // 時段
@@ -249,6 +250,7 @@ function createBookingGroup(groupId, data, verifyToken, bookingIds) {
     groupId,                     // 群組ID
     data.email,                  // 郵箱
     data.name,                   // 姓名
+    data.organization,           // 組織
     data.phone,                  // 電話
     data.purpose,                // 用途
     now,                         // 創建時間
@@ -269,6 +271,7 @@ function createBookingGroupsSheet() {
     "GroupID",
     "Email",
     "Name",
+    "Organization",
     "Phone",
     "Purpose",
     "CreatedAt",
@@ -292,13 +295,14 @@ function sendGroupVerificationEmail(data, verifyToken, slotCount) {
   // 郵件內容
   const body = `${data.name} 您好，
 
-您已成功預約了 ${slotCount} 個時段的應數系空間。請點擊以下連結來驗證您的預約：
+您已成功預約了 ${slotCount} 個時段的應數系空間。請使用以下連結來驗證您的預約：
 
 ${verifyUrl}
 
 預約資訊：
 - 姓名：${data.name}
 - 聯絡信箱：${data.email}
+- 單位 / 系級：${data.organization}
 - 聯絡電話：${data.phone}
 - 預約用途：${data.purpose}
 - 預約時段數量：${slotCount}
@@ -605,6 +609,7 @@ function createBooking(data) {
     Utilities.getUuid(),
     data.name,
     data.email,
+    data.organization,
     data.phone,
     data.date,
     data.timeSlot,

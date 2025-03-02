@@ -14,6 +14,7 @@ export interface BookingDataProps {
     isMultipleBooking?: boolean;
     name: string;
     email: string;
+    organization: string;
     phone: string;
     date: string;
     timeSlot: string;

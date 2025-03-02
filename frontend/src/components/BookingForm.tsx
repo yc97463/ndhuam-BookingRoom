@@ -23,6 +23,7 @@ export default function BookingForm({
         // 構建基本用戶資料
         const userData = {
             name: (form.elements.namedItem('name') as HTMLInputElement).value,
+            organization: (form.elements.namedItem('organization') as HTMLInputElement).value,
             email: (form.elements.namedItem('email') as HTMLInputElement).value,
             phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
             purpose: (form.elements.namedItem('purpose') as HTMLTextAreaElement).value,
@@ -57,6 +58,7 @@ export default function BookingForm({
             // 以下是為了兼容原有的單時段設計
             name: userData.name,
             email: userData.email,
+            organization: userData.organization,
             phone: userData.phone,
             purpose: userData.purpose,
             roomId: userData.roomId,
@@ -79,15 +81,40 @@ export default function BookingForm({
                 </div>
             </div> */}
 
-            <div className="flex flex-col gap-2">
-                <label htmlFor="name" className="font-semibold">姓名：</label>
-                <input
-                    id="name"
-                    name="name"
-                    placeholder="請輸入您的姓名"
-                    required
-                    className="border p-2 w-full rounded"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="name" className="font-semibold">姓名：</label>
+                    <input
+                        id="name"
+                        name="name"
+                        placeholder="請輸入您的姓名"
+                        required
+                        className="border p-2 w-full rounded"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="organization" className="font-semibold">單位 / 系級：</label>
+                    <input
+                        id="organization"
+                        name="organization"
+                        placeholder="請輸入您的單位或系級"
+                        required
+                        className="border p-2 w-full rounded"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="phone" className="font-semibold">聯絡電話：</label>
+                    <input
+                        id="phone"
+                        name="phone"
+                        placeholder="請輸入您的聯絡電話"
+                        required
+                        className="border p-2 w-full rounded"
+                    />
+                </div>
+
             </div>
 
             <div className="flex flex-col gap-2">
@@ -101,17 +128,6 @@ export default function BookingForm({
                     className="border p-2 w-full rounded"
                 />
                 <small className="text-gray-500">必須使用 @ndhu.edu.tw 或 @gms.ndhu.edu.tw 信箱</small>
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <label htmlFor="phone" className="font-semibold">聯絡電話：</label>
-                <input
-                    id="phone"
-                    name="phone"
-                    placeholder="請輸入您的聯絡電話"
-                    required
-                    className="border p-2 w-full rounded"
-                />
             </div>
 
             <div className="flex flex-col gap-2">
