@@ -27,7 +27,7 @@ export interface BookingFormProps {
 }
 
 export interface ScheduleGridProps {
-    data: {
+    data?: {
         days: DayProps[];
         timeSlots: string[];
         bookedSlots: { [date: string]: string[] };

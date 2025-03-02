@@ -1,76 +1,83 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import RoomSelector from "@/components/RoomSelector";
 import DateSelector from "@/components/DateSelector";
 import ScheduleGrid from "@/components/ScheduleGrid";
 import BookingForm from "@/components/BookingForm";
-import { BookingDataProps, Room } from "@/types";
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Google Script Web App API
+const GOOGLE_SCRIPT_URL = "./api/proxy";
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [scheduleData, setScheduleData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
 
-  useEffect(() => {
-    fetch(`${GOOGLE_SCRIPT_URL}/getRooms`)
-      .then((res) => res.json())
-      .then((data) => {
-        setRooms(data);
-        if (data.length > 0) setSelectedRoom(data[0].roomId);
-      });
-  }, []);
+  // Fetch rooms
+  const { data: rooms, error: roomsError } = useSWR(`${GOOGLE_SCRIPT_URL}?action=getRooms`, fetcher);
 
-  useEffect(() => {
-    if (!selectedRoom) return;
-    setLoading(true);
-    fetch(`${GOOGLE_SCRIPT_URL}/getTimeSlots?date=${selectedDate}&room=${selectedRoom}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setScheduleData(data);
-        setLoading(false);
-      });
-  }, [selectedRoom, selectedDate]);
+  // Fetch schedule
+  const {
+    data: scheduleData,
+    error: scheduleError,
+    mutate: refreshSchedule,
+  } = useSWR(
+    selectedRoom
+      ? `${GOOGLE_SCRIPT_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}`
+      : null,
+    fetcher
+  );
 
-  const handleBookingSubmit = (bookingData: BookingDataProps) => {
-    setLoading(true);
-    fetch(`${GOOGLE_SCRIPT_URL}/submitBooking`, {
+  // Select first room by default
+  useState(() => {
+    if (rooms && rooms.length > 0 && !selectedRoom) {
+      setSelectedRoom(rooms[0].roomId);
+    }
+  });
+
+  const handleBookingSubmit = async (bookingData: any) => {
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}`, {
       method: "POST",
-      body: JSON.stringify(bookingData),
+      body: JSON.stringify({ action: "submitBooking", ...bookingData }),
       headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((response) => {
-        setLoading(false);
-        if (response.success) {
-          alert("預約成功！驗證信已發送至您的信箱。");
-          setSelectedSlot(null);
-          fetch(`${GOOGLE_SCRIPT_URL}/getTimeSlots?date=${selectedDate}&room=${selectedRoom}`)
-            .then((res) => res.json())
-            .then((data) => setScheduleData(data));
-        } else {
-          alert("預約失敗：" + response.error);
-        }
-      })
-      .catch((error) => {
-        setLoading(false);
-        alert("預約發生錯誤：" + error.message);
-      });
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      alert("預約成功！請檢查您的信箱。");
+      setSelectedSlot(null);
+      refreshSchedule();
+    } else {
+      alert("預約失敗：" + result.error);
+    }
   };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">應數系空間預約系統</h1>
       <div className="flex flex-col gap-4">
-        <RoomSelector rooms={rooms} selectedRoom={selectedRoom} onSelect={setSelectedRoom} />
+        {roomsError ? (
+          <p className="text-red-500">無法載入教室</p>
+        ) : (
+          <RoomSelector rooms={rooms || []} selectedRoom={selectedRoom} onSelect={setSelectedRoom} />
+        )}
+
         <DateSelector selectedDate={selectedDate} onChange={setSelectedDate} />
-        {loading ? <p>載入中...</p> : <ScheduleGrid data={scheduleData} onSelectSlot={setSelectedSlot} />}
+
+        {scheduleError ? (
+          <p className="text-red-500">無法載入時段</p>
+        ) : (
+          <ScheduleGrid
+            data={scheduleData ?? { days: [], timeSlots: [], bookedSlots: {} }}
+            onSelectSlot={setSelectedSlot}
+          />
+        )}
       </div>
+
       {selectedSlot && (
         <BookingForm
           selectedSlot={selectedSlot}
