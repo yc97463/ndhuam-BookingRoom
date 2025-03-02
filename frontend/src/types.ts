@@ -91,10 +91,10 @@ export interface SelectedSlotsProps {
 }
 
 export interface SystemHeaderProps {
-    rooms: any[];
+    rooms: Room[];
     selectedRoom: string;
     selectedDate: string;
-    roomsError: any;
+    roomsError: boolean;
     onRoomSelect: (roomId: string) => void;
     onDateChange: (date: string) => void;
     onDateAdjust: (days: number) => void;

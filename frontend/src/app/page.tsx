@@ -8,7 +8,7 @@ import ScheduleGrid from "@/components/ScheduleGrid";
 import SelectedSlots from "@/components/SelectedSlots";
 import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
-import { BookingDataProps, BookingSystemProps } from '@/types';
+import { BookingDataProps, BookingSystemProps, Room } from '@/types';
 
 // API 基礎 URL
 const API_URL = `https://ndhuam-bookingroom-proxy.deershark-tech.workers.dev/`;
@@ -161,7 +161,7 @@ const BookingSystem = () => {
             selectedSlots={selectedSlots}
             selectedDate={selectedDate}
             selectedRoom={selectedRoom}
-            roomName={rooms?.find((room: { roomId: string; }) => room.roomId === selectedRoom)?.roomName || selectedRoom}
+            roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
             onClose={() => setSelectedSlots([])}
             onSubmit={handleBookingSubmit}
           />
