@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+        }
+
+        .grid-container {
+            min-width: 800px;
+            /* 確保表格有最小寬度 */
+            display: grid;
+            grid-template-columns: 100px repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .schedule-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .time-slot {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        .time-slot:not(.header):not(.booked):not(.expired):not(.pending) {
+            cursor: pointer;
+        }
+
+        .time-slot:not(.header):not(.booked):hover {
+            background-color: #f0f0f0;
+        }
+
+        .header {
+            background-color: #eee;
+            font-weight: bold;
+        }
+
+        .booked {
+            background-color: #ffebee;
+            color: #d32f2f;
+            cursor: not-allowed;
+        }
+
+        .selected {
+            background-color: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .form-container {
+            margin-top: 20px;
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: #d32f2f;
+            margin-top: 10px;
+        }
+
+        .expired {
+            background-color: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        .pending {
+            background-color: #fff3e0;
+            /* 淡橘色背景 */
+            color: #f57c00;
+            /* 橘色文字 */
+            cursor: not-allowed;
+        }
+
+        .operate-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media screen and (max-width: 768px) {
+            .operate-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .room-selector,
+            .date-selector,
+            .reload-btn {
+                width: 100%;
+            }
+
+            .date-selector {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                gap: 8px;
+            }
+
+            .date-selector label {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-adjust-btn {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .date-adjust-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .date-input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .date-input:hover {
+            background-color: #f0f0f0;
+        }
+
+        .room-selector,
+        .date-selector {
+            margin-bottom: 20px;
+        }
+
+        .room-selector select,
+        date-selector input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 200px;
+        }
+
+        .reload-btn {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            /* 與其他元素保持一致的底部間距 */
+        }
+
+        .reload-btn button {
+            background: none;
+            /* border: 1px solid #ccc; */
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            height: 40px;
+            /* 固定高度與其他輸入框一致 */
+            width: 40px;
+            /* 保持正方形 */
+        }
+
+        .reload-btn button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .room-selector,
+        .date-selector {
+            display: flex;
+            align-items: center;
+        }
+
+        .notice {
+            background-color: #f9f9f9;
+            padding: 5px 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .loading-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .material-symbols-outlined {
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>應數系空間預約系統</h1>
+
+    <div id="loading-mask" class="loading-mask">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div>載入中...</div>
+        </div>
+    </div>
+
+    <div class="operate-section">
+        <div class="room-selector">
+            <label for="selectedRoom">選擇教室：</label>
+            <select id="selectedRoom" onchange="updateSchedule()">
+                <!-- 動態填入教室選項 -->
+                <option value="room1">載入中⋯⋯</option>
+            </select>
+        </div>
+
+        <div class="date-selector">
+            <label for="selectedDate">選擇日期：</label>
+            <button class="date-adjust-btn" onclick="adjustDate(-7)">-7</button>
+            <input type="date" id="selectedDate" class="date-input" onchange="updateSchedule()" required>
+            <button class="date-adjust-btn" onclick="adjustDate(7)">+7</button>
+        </div>
+
+        <div class="reload-btn">
+            <button onclick="updateSchedule()">
+                <span class="material-symbols-outlined">
+                    refresh
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="schedule-wrapper">
+        <div id="schedule-grid" class="grid-container">
+            <!-- 動態產生時段表格 -->
+        </div>
+    </div>
+
+    <div id="booking-form" class="form-container">
+        <h2>預約申請表單</h2>
+        <div class="notice">
+            <h3>預約說明</h3>
+            <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
+            <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
+
+            <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513">03-8903513</a> 聯絡應數系辦。</p>
+
+        </div>
+        <form onsubmit="submitBooking(event)">
+            <div class="form-group">
+                <label for="name">姓名：</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">電子郵件：</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">聯絡電話：</label>
+                <input type="text" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="purpose">預約用途：</label>
+                <textarea id="purpose" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>預約時間：</label>
+                <div id="selected-slot-info"></div>
+            </div>
+            <input type="hidden" id="selected-time">
+            <button type="submit" class="btn">確認預約</button>
+        </form>
+        <div id="error-message" class="error"></div>
+    </div>
+
+    <script>
+        let globalTimeSlotData = null;
+        let globalSelectedDate = null;
+
+        // 初始化頁面
+        function initialize() {
+            // 載入遮罩
+            const loadingMask = document.getElementById('loading-mask');
+            loadingMask.style.display = 'flex';
+
+            // 設定日期選擇器的最小值為今天
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            const dateInput = document.getElementById('selectedDate');
+            dateInput.min = formattedDate;
+            dateInput.value = formattedDate;
+
+            // 載入教室資料
+            google.script.run
+                .withSuccessHandler(function (rooms) {
+                    if (!rooms || rooms.length === 0) {
+                        console.error('No rooms available');
+                        loadingMask.style.display = 'none';
+                        return;
+                    }
+                    const select = document.getElementById('selectedRoom');
+                    select.innerHTML = rooms.map(room =>
+                        `<option value="${room.roomId}">${room.roomName}</option>`
+                    ).join('');
+
+                    updateSchedule();
+                })
+                .withFailureHandler(function (error) {
+                    console.error('Failed to load rooms:', error);
+                    document.getElementById('error-message').textContent =
+                        '載入教室資料失敗：' + error.message;
+                    loadingMask.style.display = 'none';
+                })
+                .getRooms();
+        }
+
+        // 更新時段表
+        function updateSchedule() {
+            const loadingMask = document.getElementById('loading-mask');
+            loadingMask.style.display = 'flex';
+
+            const selectedDate = document.getElementById('selectedDate').value;
+            const selectedRoom = document.getElementById('selectedRoom').value;
+
+            google.script.run
+                .withSuccessHandler(function (response) {
+                    renderSchedule(response);
+                    loadingMask.style.display = 'none';
+                })
+                .withFailureHandler(function (error) {
+                    console.error('Failed to update schedule:', error);
+                    loadingMask.style.display = 'none';
+                })
+                .getTimeSlots(selectedDate, selectedRoom);
+        }
+
+        function adjustDate(days) {
+            const dateInput = document.getElementById('selectedDate');
+            const currentDate = new Date(dateInput.value);
+            currentDate.setDate(currentDate.getDate() + days);
+
+            // Format date as YYYY-MM-DD
+            const newDate = currentDate.toISOString().split('T')[0];
+            dateInput.value = newDate;
+
+            updateSchedule();
+        }
+
+        // 修改提交預約
+        function submitBooking(event) {
+            event.preventDefault();
+
+            // 顯示遮罩
+            const loadingMask = document.getElementById('loading-mask');
+            loadingMask.style.display = 'flex';
+
+            const selectedDate = globalSelectedDate;
+            const selectedRoom = document.getElementById('selectedRoom').value;
+
+            const data = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                date: selectedDate,
+                timeSlot: document.getElementById('selected-time').value,
+                roomId: selectedRoom,
+                purpose: document.getElementById('purpose').value
+            };
+
+            google.script.run
+                .withSuccessHandler(function (response) {
+                    // 在處理回應前先隱藏遮罩
+                    loadingMask.style.display = 'none';
+
+                    console.log('Booking response:', response);
+
+                    if (response && response.success) {
+                        alert('預約成功！驗證信已發送至您的信箱。');
+                        // 重置表單
+                        document.getElementById('booking-form').style.display = 'none';
+                        document.getElementById('email').value = '';
+                        document.getElementById('purpose').value = '';
+                        // 更新時段表
+                        updateSchedule(); // 這裡會再次顯示遮罩直到更新完成
+                    } else {
+                        bookingError(new Error(response.error || '預約失敗，請稍後再試。'));
+                    }
+                })
+                .withFailureHandler(function (error) {
+                    // 發生錯誤時也要隱藏遮罩
+                    loadingMask.style.display = 'none';
+                    bookingError(error);
+                })
+                .processBooking(data);
+        }
+
+        // 渲染時段表
+        // 在 Index.html 中修改對應的 renderSchedule 函數
+        function renderSchedule(response) {
+            console.log('Raw response:', response);
+
+            try {
+                // 解析資料
+                let data = response;
+                if (typeof response === 'string') {
+                    if (response.startsWith(")]}'")) {
+                        response = response.substring(4);
+                    }
+                    data = JSON.parse(response);
+                }
+
+                console.log('Parsed data:', data);
+
+                // 檢查資料結構
+                if (!data || !data.days || !data.timeSlots || !data.bookedSlots) {
+                    console.error('Invalid data structure:', data);
+                    return;
+                }
+
+                // 格式化已預約時段資料
+                const formattedBookedSlots = {};
+                Object.keys(data.bookedSlots).forEach(date => {
+                    formattedBookedSlots[date] = data.bookedSlots[date].map(time => {
+                        // 如果是完整的日期時間格式，轉換為 "HH:00" 格式
+                        if (time.includes('T')) {
+                            const d = new Date(time);
+                            return `${String(d.getHours()).padStart(2, '0')}:00`;
+                        }
+                        return time;
+                    });
+                });
+
+                console.log('Formatted booked slots:', formattedBookedSlots);
+
+                globalTimeSlotData = {
+                    ...data,
+                    bookedSlots: formattedBookedSlots
+                };
+
+                const grid = document.getElementById('schedule-grid');
+                grid.innerHTML = '';
+
+                // 添加表頭
+                grid.innerHTML = '<div class="time-slot header">時間</div>';
+                data.days.forEach(day => {
+                    if (!day || !day.dayOfWeek || !day.date) {
+                        console.error('Invalid day data:', day);
+                        return;
+                    }
+                    grid.innerHTML += `
+              <div class="time-slot header">
+                ${day.dayOfWeek}<br>
+                ${day.date}
+              </div>`;
+                });
+
+                // 添加時段
+                data.timeSlots.forEach(time => {
+                    grid.innerHTML += `<div class="time-slot">${time}</div>`;
+
+
+                    const selectRoomElement = document.getElementById('selectedRoom');
+                    const selectedRoomValue = selectRoomElement.value; // 取得選中的 value
+                    const selectedRoomText = selectRoomElement.options[selectRoomElement.selectedIndex].text; // 取得選中的文字內容
+
+                    data.days.forEach(day => {
+                        // 檢查是否過期
+                        const currentTime = new Date();
+                        const slotTime = new Date(`${day.date} ${time}`);
+                        const isExpired = slotTime < currentTime;
+                        const isLimited1Hr = slotTime < new Date(currentTime.getTime() + 60 * 60 * 1000);
+
+                        // 使用格式化後的已預約時段資料
+                        const isBooked = formattedBookedSlots[day.date]?.includes(time);
+                        const isPending = data.pendingSlots[day.date]?.includes(time);
+
+                        console.log(`Checking ${selectedRoomText} ${day.date} ${time}: booked=${isBooked}, pending=${isPending}, expired=${isExpired}`);
+
+                        // 決定狀態和顯示文字
+                        let status = '';
+                        let statusText = '';
+
+                        if (isExpired || isLimited1Hr) {
+                            status = 'expired';
+                            statusText = '已過期';
+                        } else if (isBooked) {
+                            status = 'booked';
+                            statusText = '已預約';
+                        } else if (isPending) {
+                            status = 'pending';
+                            statusText = '確認中';
+                        } else {
+                            status = '';
+                            statusText = '可預約';
+                        }
+
+                        grid.innerHTML += `
+                <div class="time-slot ${status}"
+                    onclick="${(isBooked || isExpired || isPending) ? '' : `selectTimeSlot(this, '${time}', '${day.date}', '${selectedRoomText}')`}">
+                  ${statusText}
+                </div>`;
+                    });
+                });
+            } catch (error) {
+                console.error('Error rendering schedule:', error, '\nResponse:', response);
+            }
+        }
+
+        // 選擇時段
+        function selectTimeSlot(element, time, date, roomId) {
+            // 移除其他選中狀態
+            document.querySelectorAll('.time-slot.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // 解析小時部分並加一個小時
+            let hour = parseInt(time.split(':')[0], 10); // 取得小時部分，並轉為數字
+            hour = (hour + 1) % 24; // 加一個小時，確保小時不超過 24 小時制
+            // 格式化為 HH:00
+            const time_1hr = `${hour.toString().padStart(2, '0')}:00`; // 確保小時是兩位數
+
+            // 添加選中狀態
+            element.classList.add('selected');
+
+            // 找到對應的日期物件
+            const dayData = globalTimeSlotData.days.find(d => d.date === date);
+
+            // 更新表單
+            document.getElementById('booking-form').style.display = 'block';
+            document.getElementById('selected-time').value = time;
+            document.getElementById('selected-slot-info').textContent =
+                `${date} ${dayData.dayOfWeek} ${time} - ${time_1hr}  (${roomId})`;
+            globalSelectedDate = date;
+
+            // 清空錯誤訊息
+            document.getElementById('error-message').textContent = '';
+        }
+
+        // 預約成功處理
+        function bookingSuccess(response) {
+            console.log('Booking response:', response); // 除錯用
+
+            if (response && response.success) {
+                alert('預約成功！驗證信已發送至您的信箱。');
+                // 重置表單
+                document.getElementById('booking-form').style.display = 'none';
+                document.getElementById('email').value = '';
+                document.getElementById('purpose').value = '';
+                // 更新時段表
+                updateSchedule();
+            } else {
+                bookingError(new Error(response.error || '預約失敗，請稍後再試。'));
+            }
+        }
+
+        // 預約失敗處理
+        function bookingError(error) {
+            document.getElementById('error-message').textContent =
+                '預約失敗：' + error.message;
+        }
+
+        // 初始化頁面
+        initialize();
+    </script>
+    <script>
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
+            alert('載入錯誤：' + msg);
+            return false;
+        };
+    </script>
+
+</body>
+
+</html>
