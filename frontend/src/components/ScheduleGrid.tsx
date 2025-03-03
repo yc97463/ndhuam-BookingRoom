@@ -80,12 +80,12 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
                             } else if (isPending) {
                                 status = 'bg-orange-100 text-orange-700 border-1 border-gray-300 cursor-not-allowed';
                                 statusText = '確認中';
-                            } else if (selected) {
-                                status = 'bg-green-100 text-green-800 cursor-pointer border-1 border-green-500';
-                                statusText = '已選擇';
                             } else if (isReviewing) {
                                 status = 'bg-yellow-100 text-yellow-700 border-1 border-gray-300 cursor-not-allowed';
                                 statusText = '審核中';
+                            } else if (selected) {
+                                status = 'bg-green-100 text-green-800 cursor-pointer border-1 border-green-500';
+                                statusText = '已選擇';
                             } else {
                                 status = 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100 border-1 border-gray-300';
                                 statusText = '可預約';
@@ -96,7 +96,7 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
                                     key={`${day.date}-${time}`}
                                     className={`p-2 text-center ${status}`}
                                     onClick={() => {
-                                        if (!isBooked && !expired && !withinOneHour && !isPending) {
+                                        if (!isBooked && !expired && !withinOneHour && !isPending && !isReviewing) {
                                             onSelectSlot({
                                                 date: day.date,
                                                 time: time,
