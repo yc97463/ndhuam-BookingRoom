@@ -11,11 +11,12 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 function VerifyContent() {
     const searchParams = useSearchParams();
+    const groupId = searchParams.get('groupId');
     const token = searchParams.get('token');
     const isApproved = searchParams.get('isApproved') || 'false';
 
     const { data, error } = useSWR(
-        token ? `${API_URL}?action=reviewBooking&token=${token}&isApproved=${isApproved}` : null,
+        token ? `${API_URL}?action=reviewBooking&groupId=${groupId}&token=${token}&isApproved=${isApproved}` : null,
         fetcher,
         {
             dedupingInterval: 0,
@@ -50,7 +51,7 @@ function VerifyContent() {
 
     return (
         <div className={`flex items-center justify-center min-h-screen ${data.success ? 'bg-green-50' : 'bg-red-50'}`}>
-            <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
+            <div className="bg-white shadow-lg rounded-lg p-8 max-w-xl w-full text-center">
                 {data.success ? (
                     <CheckCircle2 className="mx-auto mb-4 text-green-500" size={64} />
                 ) : (
@@ -61,10 +62,18 @@ function VerifyContent() {
                     {data.success ? 'Verification Successful' : 'Verification Failed'}
                 </h2>
 
+                {groupId && (
+                    <div className="mb-4 bg-gray-100 rounded p-3">
+                        <p className="text-gray-700 break-all">
+                            <span className="font-semibold">Group ID:</span> {groupId}
+                        </p>
+                    </div>
+                )}
+
                 {token && (
                     <div className="mb-4 bg-gray-100 rounded p-3">
                         <p className="text-gray-700 break-all">
-                            <span className="font-semibold">Token:</span> {token}
+                            <span className="font-semibold">Admin Token:</span> {token}
                         </p>
                     </div>
                 )}

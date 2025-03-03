@@ -32,8 +32,9 @@ function doGet(e) {
       return processGroupVerification(token);
     } else if (action === "reviewBooking") {
       const token = e.parameter.token;
+      const groupId = e.parameter.groupId;
       const isApproved = e.parameter.isApproved === "true";
-      return processReviewingBooking(token, isApproved);
+      return processReviewingBooking(groupId, token, isApproved);
     }
 
     return createResponse({ error: "Invalid action" });
@@ -407,12 +408,43 @@ function processGroupVerification(token) {
   }
 }
 
-function processReviewingBooking(token, isApproved) {
+function processReviewingBooking(groupId, token, isApproved) {
   // 管理端進行審核，審核 BookingGroups 表中的預約
   try {
     if (!token) {
-      return createResponse({ success: false, error: "缺少驗證令牌，請檢查您的驗證連結。" });
+      return createResponse({ success: false, error: "缺少帳號驗證令牌，請檢查您的驗證連結。" });
     }
+
+    // 查找群組
+    const adminSheet = getSpreadsheet().getSheetByName("Admins");
+    if (!adminSheet) {
+      return createResponse({ success: false, error: "找不到管理員資料。" });
+    }
+
+    const adminsData = adminSheet.getDataRange().getValues();
+    let adminRow = -1;
+    let adminData = null;
+
+    for (let i = 1; i < adminsData.length; i++) {
+      if (adminsData[i][1] === token) {  // VerifyToken 在第 2 列
+        adminRow = i + 1;  // +1 因為索引從0開始，但行號從1開始
+        adminData = adminsData[i];
+        break;
+      }
+    }
+
+    if (!adminData) {
+      return createResponse({ success: false, error: "找不到與此令牌相關聯的管理員。" });
+    }
+
+    // // 檢查狀態
+    // if (groupData[7] !== "pending_verify") {  // Status 在第8列
+    //   if (groupData[7] === "verified") {
+    //     return createResponse({ success: false, error: "此預約群組已經驗證過了。" });
+    //   } else {
+    //     return createResponse({ success: false, error: "此預約群組的狀態不允許驗證。" });
+    //   }
+    // }
 
     // 查找群組
     const groupsSheet = getSpreadsheet().getSheetByName("BookingGroups");
@@ -426,7 +458,7 @@ function processReviewingBooking(token, isApproved) {
 
     // 查找匹配的群組
     for (let i = 1; i < groupsData.length; i++) {
-      if (groupsData[i][6] === token) {  // VerifyToken 在第7列
+      if (groupsData[i][0] === groupId) {  // GroupID 在第1列
         groupRow = i + 1;  // +1 因為索引從0開始，但行號從1開始
         groupData = groupsData[i];
         break;
@@ -436,14 +468,7 @@ function processReviewingBooking(token, isApproved) {
       return createResponse({ success: false, error: "找不到與此令牌相關聯的預約群組。" });
     }
 
-    // // 檢查狀態
-    // if (groupData[7] !== "pending_verify") {  // Status 在第8列
-    //   if (groupData[7] === "verified") {
-    //     return createResponse({ success: false, error: "此預約群組已經驗證過了。" });
-    //   } else {
-    //     return createResponse({ success: false, error: "此預約群組的狀態不允許驗證。" });
-    //   }
-    // }
+    // 更新群組狀態
 
     if (isApproved) {
       // 更新群組狀態
