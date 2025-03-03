@@ -32,7 +32,7 @@ function doGet(e) {
       return processGroupVerification(token);
     } else if (action === "reviewBooking") {
       const token = e.parameter.token;
-      const isApproved = e.parameter.approved;
+      const isApproved = e.parameter.isApproved === "true";
       return processReviewingBooking(token, isApproved);
     }
 
@@ -409,6 +409,117 @@ function processGroupVerification(token) {
 
 function processReviewingBooking(token, isApproved) {
   // 管理端進行審核，審核 BookingGroups 表中的預約
+  try {
+    if (!token) {
+      return createResponse({ success: false, error: "缺少驗證令牌，請檢查您的驗證連結。" });
+    }
+
+    // 查找群組
+    const groupsSheet = getSpreadsheet().getSheetByName("BookingGroups");
+    if (!groupsSheet) {
+      return createResponse({ success: false, error: "找不到預約群組資料。" });
+    }
+
+    const groupsData = groupsSheet.getDataRange().getValues();
+    let groupRow = -1;
+    let groupData = null;
+
+    // 查找匹配的群組
+    for (let i = 1; i < groupsData.length; i++) {
+      if (groupsData[i][6] === token) {  // VerifyToken 在第7列
+        groupRow = i + 1;  // +1 因為索引從0開始，但行號從1開始
+        groupData = groupsData[i];
+        break;
+      }
+    }
+    if (!groupData) {
+      return createResponse({ success: false, error: "找不到與此令牌相關聯的預約群組。" });
+    }
+
+    // // 檢查狀態
+    // if (groupData[7] !== "pending_verify") {  // Status 在第8列
+    //   if (groupData[7] === "verified") {
+    //     return createResponse({ success: false, error: "此預約群組已經驗證過了。" });
+    //   } else {
+    //     return createResponse({ success: false, error: "此預約群組的狀態不允許驗證。" });
+    //   }
+    // }
+
+    if (isApproved) {
+      // 更新群組狀態
+      groupsSheet.getRange(groupRow, 8).setValue("verified");  // 更新狀態欄位
+
+      // 更新所有關聯的預約
+      const bookingIds = groupData[8].split(",");  // BookingIDs 在第9列
+      const bookingsSheet = getSpreadsheet().getSheetByName("Bookings");
+      const bookingsData = bookingsSheet.getDataRange().getValues();
+      const bookedSlots = [];
+
+      for (let i = 1; i < bookingsData.length; i++) {
+        if (bookingIds.includes(bookingsData[i][0])) {  // 檢查 BookingID
+          bookingsSheet.getRange(i + 1, 9).setValue("confirmed");  // 更新狀態欄位
+          bookedSlots.push({
+            date: bookingsData[i][4],
+            time: bookingsData[i][5]
+          });
+        }
+      }
+
+      // 發送確認郵件
+      sendGroupConfirmationEmail(
+        groupData[2],  // Name
+        groupData[1],  // Email
+        bookingIds.length,
+        groupData[4],  // Purpose
+        bookedSlots,    // Booked slots
+        "approved"
+      );
+
+      return createResponse({
+        success: true,
+        message: `您的 ${bookingIds.length} 個預約時段已成功驗證。確認郵件已發送至您的信箱 ${groupData[1]}。`
+      });
+
+    } else {
+      // 更新群組狀態
+      groupsSheet.getRange(groupRow, 8).setValue("rejected");  // 更新狀態欄位
+
+      // 更新所有關聯的預約
+      const bookingIds = groupData[8].split(",");  // BookingIDs 在第9列
+      const bookingsSheet = getSpreadsheet().getSheetByName("Bookings");
+      const bookingsData = bookingsSheet.getDataRange().getValues();
+      const bookedSlots = [];
+
+      for (let i = 1; i < bookingsData.length; i++) {
+        if (bookingIds.includes(bookingsData[i][0])) {  // 檢查 BookingID
+          bookingsSheet.getRange(i + 1, 9).setValue("rejected");  // 更新狀態欄位
+          bookedSlots.push({
+            date: bookingsData[i][4],
+            time: bookingsData[i][5]
+          });
+        }
+      }
+
+      // 發送確認郵件
+      sendGroupConfirmationEmail(
+        groupData[2],  // Name
+        groupData[1],  // Email
+        bookingIds.length,
+        groupData[4],  // Purpose
+        bookedSlots,    // Booked slots
+        "rejected"
+      );
+
+      return createResponse({
+        success: false,
+        error: `您的 ${bookingIds.length} 個預約時段已被拒絕。確認郵件已發送至信箱 ${groupData[1]}。`
+      });
+
+    }
+  } catch (error) {
+    Logger.log("處理群組驗證時發生錯誤: " + error.message);
+    return createResponse({ success: false, error: "處理您的驗證請求時發生錯誤: " + error.message });
+  }
 
 }
 
@@ -505,13 +616,29 @@ function generateBookingSummary(bookedSlots) {
 }
 
 // 發送群組確認郵件
-function sendGroupConfirmationEmail(name, email, slotCount, purpose, bookedSlots) {
+function sendGroupConfirmationEmail(name, email, slotCount, purpose, bookedSlots, action) {
+  let statusMessage = "";
+  let noteMessage = "如有任何問題，請聯絡應數系辦。";
+  switch (action) {
+    case "approved":
+      statusMessage = "系辦審核通過，您預約成功";
+      noteMessage = "請於預約的使用時間前，在上班時間至應數系辦領取鑰匙。如需取消預約，請至少提前24小時通知系辦。";
+      break;
+    case "rejected":
+      statusMessage = "系辦審核不通過";
+      break;
+    default:
+      statusMessage = "信箱驗證成功，請等待系辦確認";
+      break;
+  }
+
+
   // 使用 Gmail 服務發送郵件
   const subject = "應數系空間預約 - 預約確認通知";
 
   const body = `${name} 您好，
 
-您的 ${slotCount} 個時段預約已成功確認。
+您的 ${slotCount} 個時段預約${statusMessage}。
 
 預約資訊：
 - 姓名：${name}
@@ -521,7 +648,7 @@ function sendGroupConfirmationEmail(name, email, slotCount, purpose, bookedSlots
 - 預約時段：
 ${generateBookingSummary(bookedSlots)}
 
-請於使用時間前往系辦領取鑰匙。如需取消預約，請至少提前24小時通知系辦。
+${noteMessage}
 
 謝謝！
 應用數學系`;
@@ -576,6 +703,10 @@ function getBookedAndPendingSlots(roomId) {
       const formattedDate = Utilities.formatDate(new Date(row[4]), "Asia/Taipei", "yyyy-MM-dd");
       const timeSlot = `${new Date(row[5]).getHours().toString().padStart(2, "0")}:00`;
       const status = row[8];
+
+      if (formattedDate < Utilities.formatDate(new Date(), "Asia/Taipei", "yyyy-MM-dd")) {
+        continue;
+      }
 
       if (status === "confirmed") {
         if (!bookedSlots[formattedDate]) bookedSlots[formattedDate] = [];
