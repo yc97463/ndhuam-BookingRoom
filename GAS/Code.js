@@ -289,8 +289,10 @@ function sendGroupVerificationEmail(data, verifyToken, slotCount) {
 
 
   // 生成驗證連結
-  const scriptUrl = ScriptApp.getService().getUrl();
-  const verifyUrl = `${scriptUrl}?action=verifyGroup&token=${verifyToken}`;
+  // const scriptUrl = ScriptApp.getService().getUrl();
+  // const verifyUrl = `${scriptUrl}?action=verifyGroup&token=${verifyToken}`;
+  const platformUrl = "https://ndhuam-bookingroom.dstw.dev"
+  const verifyUrl = `${platformUrl}/verify-group?token=${verifyToken}`;
 
   // 郵件內容
   const body = `${data.name} 您好，
@@ -328,13 +330,13 @@ ${data.multipleSlots
 function processGroupVerification(token) {
   try {
     if (!token) {
-      return createHtmlResponse("驗證失敗", "缺少驗證令牌，請檢查您的驗證連結。");
+      return createResponse({ success: false, error: "缺少驗證令牌，請檢查您的驗證連結。" });
     }
 
     // 查找群組
     const groupsSheet = getSpreadsheet().getSheetByName("BookingGroups");
     if (!groupsSheet) {
-      return createHtmlResponse("驗證失敗", "找不到預約群組資料。");
+      return createResponse({ success: false, error: "找不到預約群組資料。" });
     }
 
     const groupsData = groupsSheet.getDataRange().getValues();
@@ -349,17 +351,16 @@ function processGroupVerification(token) {
         break;
       }
     }
-
     if (!groupData) {
-      return createHtmlResponse("驗證失敗", "找不到與此令牌相關聯的預約群組。");
+      return createResponse({ success: false, error: "找不到與此令牌相關聯的預約群組。" });
     }
 
     // 檢查狀態
     if (groupData[7] !== "pending_verify") {  // Status 在第8列
       if (groupData[7] === "verified") {
-        return createHtmlResponse("已驗證", "此預約群組已經驗證過了。");
+        return createResponse({ success: false, error: "此預約群組已經驗證過了。" });
       } else {
-        return createHtmlResponse("驗證失敗", "此預約群組的狀態不允許驗證。");
+        return createResponse({ success: false, error: "此預約群組的狀態不允許驗證。" });
       }
     }
 
@@ -391,13 +392,13 @@ function processGroupVerification(token) {
       bookedSlots    // Booked slots
     );
 
-    return createHtmlResponse(
-      "驗證成功",
-      `您的 ${bookingIds.length} 個預約時段已成功驗證。確認郵件已發送至您的信箱 ${groupData[1]}。`
-    );
+    return createResponse({
+      success: true,
+      message: `您的 ${bookingIds.length} 個預約時段已成功驗證。確認郵件已發送至您的信箱 ${groupData[1]}。`
+    });
   } catch (error) {
     Logger.log("處理群組驗證時發生錯誤: " + error.message);
-    return createHtmlResponse("驗證錯誤", "處理您的驗證請求時發生錯誤: " + error.message);
+    return createResponse({ success: false, error: "處理您的驗證請求時發生錯誤: " + error.message });
   }
 }
 
