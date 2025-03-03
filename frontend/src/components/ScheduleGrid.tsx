@@ -63,6 +63,7 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
                         {data.days.map((day: DayProps) => {
                             const isBooked = data.bookedSlots[day.date]?.includes(time);
                             const isPending = data.pendingSlots?.[day.date]?.includes(time);
+                            const isReviewing = data.reviewingSlots?.[day.date]?.includes(time);
                             const expired = isExpired(day.date, time);
                             const withinOneHour = isWithinOneHour(day.date, time);
                             const selected = isSlotSelected(day.date, time);
@@ -82,6 +83,9 @@ export default function ScheduleGrid({ data, selectedSlots, onSelectSlot }: Sche
                             } else if (selected) {
                                 status = 'bg-green-100 text-green-800 cursor-pointer border-1 border-green-500';
                                 statusText = '已選擇';
+                            } else if (isReviewing) {
+                                status = 'bg-yellow-100 text-yellow-700 border-1 border-gray-300 cursor-not-allowed';
+                                statusText = '審核中';
                             } else {
                                 status = 'bg-white text-gray-700 cursor-pointer hover:bg-gray-100 border-1 border-gray-300';
                                 statusText = '可預約';

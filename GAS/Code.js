@@ -30,6 +30,10 @@ function doGet(e) {
     } else if (action === "verifyGroup") {
       const token = e.parameter.token;
       return processGroupVerification(token);
+    } else if (action === "reviewBooking") {
+      const token = e.parameter.token;
+      const isApproved = e.parameter.approved;
+      return processReviewingBooking(token, isApproved);
     }
 
     return createResponse({ error: "Invalid action" });
@@ -125,13 +129,14 @@ function getTimeSlots(selectedDate, roomId, firstDay) {
       timeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
     }
 
-    const { bookedSlots, pendingSlots } = getBookedAndPendingSlots(roomId);
+    const { bookedSlots, pendingSlots, reviewingSlots } = getBookedAndPendingSlots(roomId);
 
     return {
       days,
       timeSlots,
       bookedSlots: bookedSlots || {},
       pendingSlots: pendingSlots || {},
+      reviewingSlots: reviewingSlots || {},
       roomId
     };
   } catch (error) {
@@ -357,7 +362,7 @@ function processGroupVerification(token) {
 
     // 檢查狀態
     if (groupData[7] !== "pending_verify") {  // Status 在第8列
-      if (groupData[7] === "verified") {
+      if (groupData[7] === "reviewing") {
         return createResponse({ success: false, error: "此預約群組已經驗證過了。" });
       } else {
         return createResponse({ success: false, error: "此預約群組的狀態不允許驗證。" });
@@ -365,7 +370,7 @@ function processGroupVerification(token) {
     }
 
     // 更新群組狀態
-    groupsSheet.getRange(groupRow, 8).setValue("verified");  // 更新狀態欄位
+    groupsSheet.getRange(groupRow, 8).setValue("reviewing");  // 更新狀態欄位
 
     // 更新所有關聯的預約
     const bookingIds = groupData[8].split(",");  // BookingIDs 在第9列
@@ -375,7 +380,7 @@ function processGroupVerification(token) {
 
     for (let i = 1; i < bookingsData.length; i++) {
       if (bookingIds.includes(bookingsData[i][0])) {  // 檢查 BookingID
-        bookingsSheet.getRange(i + 1, 9).setValue("confirmed");  // 更新狀態欄位
+        bookingsSheet.getRange(i + 1, 9).setValue("reviewing");  // 更新狀態欄位
         bookedSlots.push({
           date: bookingsData[i][4],
           time: bookingsData[i][5]
@@ -402,66 +407,72 @@ function processGroupVerification(token) {
   }
 }
 
-// 創建HTML回應頁面
-function createHtmlResponse(title, message) {
-  const html = `
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title} - 應數系空間預約系統</title>
-      <style>
-        body {
-          font-family: "Noto Sans TC", sans-serif;
-          margin: 0;
-          padding: 20px;
-          background-color: #f9f9f9;
-          color: #333;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-        }
-        .container {
-          background-color: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          padding: 30px;
-          max-width: 500px;
-          width: 100%;
-          text-align: center;
-        }
-        h1 {
-          color: #4a6fa5;
-          margin-bottom: 20px;
-        }
-        p {
-          line-height: 1.6;
-          margin-bottom: 20px;
-        }
-        .button {
-          display: inline-block;
-          background-color: #4a6fa5;
-          color: white;
-          padding: 10px 20px;
-          border-radius: 4px;
-          text-decoration: none;
-          font-weight: bold;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>${title}</h1>
-        <p>${message}</p>
-        <a href="#" class="button" onclick="window.close()">關閉</a>
-      </div>
-    </body>
-  </html>`;
+function processReviewingBooking(token, isApproved) {
+  // 管理端進行審核，審核 BookingGroups 表中的預約
 
-  return HtmlService.createHtmlOutput(html);
 }
+
+
+// 創建HTML回應頁面
+// function createHtmlResponse(title, message) {
+//   const html = `
+//   <!DOCTYPE html>
+//   <html>
+//     <head>
+//       <meta charset="UTF-8">
+//       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//       <title>${title} - 應數系空間預約系統</title>
+//       <style>
+//         body {
+//           font-family: "Noto Sans TC", sans-serif;
+//           margin: 0;
+//           padding: 20px;
+//           background-color: #f9f9f9;
+//           color: #333;
+//           display: flex;
+//           justify-content: center;
+//           align-items: center;
+//           min-height: 100vh;
+//         }
+//         .container {
+//           background-color: #fff;
+//           border-radius: 8px;
+//           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+//           padding: 30px;
+//           max-width: 500px;
+//           width: 100%;
+//           text-align: center;
+//         }
+//         h1 {
+//           color: #4a6fa5;
+//           margin-bottom: 20px;
+//         }
+//         p {
+//           line-height: 1.6;
+//           margin-bottom: 20px;
+//         }
+//         .button {
+//           display: inline-block;
+//           background-color: #4a6fa5;
+//           color: white;
+//           padding: 10px 20px;
+//           border-radius: 4px;
+//           text-decoration: none;
+//           font-weight: bold;
+//         }
+//       </style>
+//     </head>
+//     <body>
+//       <div class="container">
+//         <h1>${title}</h1>
+//         <p>${message}</p>
+//         <a href="#" class="button" onclick="window.close()">關閉</a>
+//       </div>
+//     </body>
+//   </html>`;
+
+//   return HtmlService.createHtmlOutput(html);
+// }
 
 function generateBookingSummary(bookedSlots) {
   if (!bookedSlots || bookedSlots.length === 0) {
@@ -519,9 +530,6 @@ ${generateBookingSummary(bookedSlots)}
   MailApp.sendEmail(email, subject, body);
 }
 
-
-
-
 function processSingleBooking(data) {
   try {
     Logger.log("Processing single booking: " + JSON.stringify(data));
@@ -560,6 +568,7 @@ function getBookedAndPendingSlots(roomId) {
   const data = sheet.getDataRange().getValues();
   const bookedSlots = {};
   const pendingSlots = {};
+  const reviewingSlots = {};
 
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
@@ -574,11 +583,14 @@ function getBookedAndPendingSlots(roomId) {
       } else if (status.includes("pending")) {
         if (!pendingSlots[formattedDate]) pendingSlots[formattedDate] = [];
         pendingSlots[formattedDate].push(timeSlot);
+      } else if (status === "reviewing") {
+        if (!reviewingSlots[formattedDate]) reviewingSlots[formattedDate] = [];
+        reviewingSlots[formattedDate].push(timeSlot);
       }
     }
   }
 
-  return { bookedSlots, pendingSlots };
+  return { bookedSlots, pendingSlots, reviewingSlots };
 }
 
 // ✅ 檢查時段是否已被預約
