@@ -297,7 +297,7 @@ function sendGroupVerificationEmail(data, verifyToken, slotCount) {
   // const scriptUrl = ScriptApp.getService().getUrl();
   // const verifyUrl = `${scriptUrl}?action=verifyGroup&token=${verifyToken}`;
   const platformUrl = "https://ndhuam-bookingroom.dstw.dev"
-  const verifyUrl = `${platformUrl}/verify-group?token=${verifyToken}`;
+  const verifyUrl = `${platformUrl}/verify?token=${verifyToken}`;
 
   // 郵件內容
   const body = `${data.name} 您好，
