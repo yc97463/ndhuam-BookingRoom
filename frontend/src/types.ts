@@ -52,6 +52,7 @@ export interface ScheduleGridProps {
         timeSlots: string[];
         bookedSlots: { [date: string]: string[] };
         pendingSlots?: { [date: string]: string[] };
+        reviewingSlots?: { [date: string]: string[] };
     };
     selectedSlots: Array<{ date: string; time: string; endTime?: string }>;
     onSelectSlot: (slot: { date: string; time: string; endTime?: string }) => void;
