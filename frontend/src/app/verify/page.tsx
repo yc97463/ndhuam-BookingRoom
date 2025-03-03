@@ -49,7 +49,7 @@ function VerifyContent() {
 
     return (
         <div className={`flex items-center justify-center min-h-screen ${data.success ? 'bg-green-50' : 'bg-red-50'}`}>
-            <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
+            <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg w-full text-center">
                 {data.success ? (
                     <CheckCircle2 className="mx-auto mb-4 text-green-500" size={64} />
                 ) : (
