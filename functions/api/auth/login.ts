@@ -7,6 +7,7 @@ interface LoginRequest {
 
 interface LoginResponse {
     message: string;
+    temp_token: string;
 }
 
 interface ErrorResponse {
@@ -60,7 +61,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         });
 
         const response: LoginResponse = {
-            message: "Please check your email for verification link"
+            message: "Please check your email for verification link",
+            temp_token: verifyToken
         };
 
         return new Response(JSON.stringify(response), {
