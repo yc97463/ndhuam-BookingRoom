@@ -60,6 +60,17 @@ function ApplicationModal({ application, onClose, onReview }: {
         });
     };
 
+    const toggleDateGroupStatus = (date: string, status: 'confirmed' | 'rejected') => {
+        setSlotStatuses(prev => {
+            const newStatuses = new Map(prev);
+            const slotsForDate = application?.requested_slots.filter(slot => slot.date === date) || [];
+            slotsForDate.forEach(slot => {
+                newStatuses.set(slot.id, status);
+            });
+            return newStatuses;
+        });
+    };
+
     const handleSubmit = async () => {
         if (!application) return;
         setIsSubmitting(true);
@@ -135,12 +146,40 @@ function ApplicationModal({ application, onClose, onReview }: {
                                 .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
                                 .map(([date, slots]) => (
                                     <div key={date} className="bg-gray-50 p-3 rounded">
-                                        <h4 className="font-medium mb-2">{date}</h4>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h4 className="font-medium">{date}</h4>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleDateGroupStatus(date, 'rejected');
+                                                    }}
+                                                    className="px-2 py-1 text-sm rounded bg-red-100 text-red-700 hover:bg-red-200 active:ring-2 active:ring-red-500 cursor-pointer"
+                                                >
+                                                    全部駁回
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleDateGroupStatus(date, 'confirmed');
+                                                    }}
+                                                    className="px-2 py-1 text-sm rounded bg-green-100 text-green-700 hover:bg-green-200 active:ring-2 active:ring-green-500 cursor-pointer"
+                                                >
+                                                    全部同意
+                                                </button>
+                                            </div>
+                                        </div>
                                         <div className="space-y-2">
                                             {slots.map((slot) => (
                                                 <div key={slot.id}
                                                     onClick={() => toggleSlotStatus(slot.id)}
-                                                    className="flex items-center justify-between p-2 bg-white rounded cursor-pointer hover:bg-gray-100 hover:ring active:ring-2 active:ring-blue-500">
+                                                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all duration-200 ease-in-out
+                                                        ${slotStatuses.get(slot.id) === 'confirmed'
+                                                            ? 'bg-green-50 border border-green-200 hover:bg-green-100 hover:border-green-300'
+                                                            : 'bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300'
+                                                        }
+                                                    `}
+                                                >
                                                     <span>
                                                         {slot.start_time}-{slot.end_time}
                                                         <span className="ml-2 text-gray-500">({slot.room_id})</span>
@@ -333,7 +372,7 @@ function ReviewContent() {
                                             .map(date => (
                                                 <span
                                                     key={date}
-                                                    className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800"
+                                                    className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800"
                                                 >
                                                     {date}
                                                 </span>
