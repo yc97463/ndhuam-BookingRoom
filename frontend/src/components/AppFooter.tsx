@@ -14,7 +14,7 @@ export default function AppFooter() {
                             應數系網
                         </Link>
                         <Link href="/review" className="text-gray-600 hover:text-gray-800">
-                            審核後台
+                            管理後台
                         </Link>
                     </div>
                 </div>
