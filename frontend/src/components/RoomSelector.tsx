@@ -13,7 +13,7 @@ export default function RoomSelector({ rooms, selectedRoom, onSelect }: RoomSele
             >
                 {rooms.map((room) => (
                     <option key={room.roomId} value={room.roomId}>
-                        {room.roomName}
+                        {room.roomId} {room.roomName}
                     </option>
                 ))}
             </select>

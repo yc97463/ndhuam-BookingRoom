@@ -41,6 +41,7 @@ export interface BookingFormProps {
     }>;
     selectedDate: string;
     selectedRoom: string;
+    roomId?: string;
     roomName?: string;
     onClose: () => void;
     onSubmit: (data: BookingDataProps) => void;

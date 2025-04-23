@@ -7,6 +7,7 @@ export default function BookingForm({
     selectedSlots,
     // selectedDate,
     selectedRoom,
+    roomId,
     roomName,
     onClose,
     onSubmit
@@ -144,7 +145,7 @@ export default function BookingForm({
             <div className="flex flex-col gap-2">
                 <label className="font-semibold">預約教室：</label>
                 <p className="p-2 bg-gray-100 rounded">
-                    {roomName || selectedRoom}
+                    {(roomId && roomName) ? `${roomId} ${roomName}` : selectedRoom}
                 </p>
             </div>
 

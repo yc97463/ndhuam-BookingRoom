@@ -172,6 +172,7 @@ const BookingSystem = () => {
             selectedSlots={selectedSlots}
             selectedDate={selectedDate}
             selectedRoom={selectedRoom}
+            roomId={selectedRoom}
             roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
             onClose={() => setSelectedSlots([])}
             onSubmit={handleBookingSubmit}

@@ -251,7 +251,7 @@ function ApplicationModal({ application, onClose, onReview }: {
                         </div>
                         <div className="flex items-center">
                             <span className="text-gray-500 text-sm mr-2">借用空間</span>
-                            <span className="font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">{application.room_id}</span>
+                            <span className="font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">{application.room_id} {application.room_name}</span>
                         </div>
                     </div>
                     <div className="flex gap-3">
