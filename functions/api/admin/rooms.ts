@@ -20,13 +20,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             });
         }
 
-        const body = await request.json() as { rooms?: any[] };
-        const { rooms = [] } = body;
-
-        // Remove tempId from rooms data
+        const { rooms = [] } = await request.json() as { rooms?: any[] };
         const cleanedRooms = rooms.map(({ tempId, ...room }) => room);
 
-        // Use D1's batch API instead of transactions
+        // First, get existing rooms to handle foreign key constraints
+        const { results: existingRooms } = await env.DB.prepare(`
+            SELECT room_id FROM rooms
+            WHERE room_id IN (
+                SELECT DISTINCT room_id FROM requested_slots
+            )
+        `).all();
+
+        const roomsInUse = new Set(existingRooms.map((r: any) => r.room_id));
+
+        // Prepare statement for updating or inserting rooms
         const stmt = env.DB.prepare(`
             INSERT OR REPLACE INTO rooms (
                 room_id, 
@@ -38,10 +45,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             ) VALUES (?, ?, ?, ?, ?, ?)
         `);
 
-        // First clear existing rooms
-        await env.DB.prepare('DELETE FROM rooms').run();
-
-        // Then insert all rooms in batch
+        // Create batch operations
         const batch = cleanedRooms.map(room =>
             stmt.bind(
                 room.roomId,
@@ -53,7 +57,22 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             )
         );
 
-        await env.DB.batch(batch);
+        // Find rooms to be deleted (not in new list but existing in DB)
+        const newRoomIds = new Set(cleanedRooms.map(r => r.roomId));
+        const deleteStmt = env.DB.prepare(`
+            DELETE FROM rooms 
+            WHERE room_id = ? 
+            AND room_id NOT IN (
+                SELECT DISTINCT room_id FROM requested_slots
+            )
+        `);
+
+        const deleteBatch = Array.from(roomsInUse)
+            .filter(roomId => !newRoomIds.has(roomId))
+            .map(roomId => deleteStmt.bind(roomId));
+
+        // Execute all operations
+        await env.DB.batch([...batch, ...deleteBatch]);
 
         return new Response(JSON.stringify({ success: true }), {
             headers: { 'Content-Type': 'application/json' }
