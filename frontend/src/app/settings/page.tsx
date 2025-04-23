@@ -7,7 +7,7 @@ import type { Room } from '@/types/room';
 export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [nextTempId, setNextTempId] = useState(1);
 
@@ -58,16 +58,16 @@ export default function SettingsPage() {
         setRooms(rooms.filter((_, i) => i !== index));
     };
 
-    const moveRoom = (fromIndex: number, toIndex: number) => {
-        const newRooms = [...rooms];
-        const [movedRoom] = newRooms.splice(fromIndex, 1);
-        newRooms.splice(toIndex, 0, movedRoom);
-        // Update order values
-        newRooms.forEach((room, index) => {
-            room.order = index;
-        });
-        setRooms(newRooms);
-    };
+    // const moveRoom = (fromIndex: number, toIndex: number) => {
+    //     const newRooms = [...rooms];
+    //     const [movedRoom] = newRooms.splice(fromIndex, 1);
+    //     newRooms.splice(toIndex, 0, movedRoom);
+    //     // Update order values
+    //     newRooms.forEach((room, index) => {
+    //         room.order = index;
+    //     });
+    //     setRooms(newRooms);
+    // };
 
     const saveRooms = async () => {
         setIsSaving(true);
