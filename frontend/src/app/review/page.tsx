@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import useSWR from 'swr';
 import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
-const API_URL = `https://ndhuam-bookingroom-proxy.deershark-tech.workers.dev/`;
+const API_URL = `/api`;
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -16,7 +16,7 @@ function VerifyContent() {
     const isApproved = searchParams.get('isApproved') || 'false';
 
     const { data, error } = useSWR(
-        token ? `${API_URL}?action=reviewBooking&groupId=${groupId}&token=${token}&isApproved=${isApproved}` : null,
+        token ? `${API_URL}/review?groupId=${groupId}&token=${token}&isApproved=${isApproved}` : null,
         fetcher,
         {
             dedupingInterval: 0,

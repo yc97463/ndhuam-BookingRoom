@@ -11,7 +11,7 @@ import LoadingMask from "@/components/LoadingMask";
 import { BookingDataProps, BookingSystemProps, Room } from '@/types';
 
 // API 基礎 URL
-const API_URL = `https://ndhuam-bookingroom-proxy.deershark-tech.workers.dev/`;
+const API_URL = `/api`;
 
 // SWR fetcher 函數
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -24,12 +24,12 @@ const BookingSystem = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // SWR API 獲取部分
-  const { data: rooms, error: roomsError, isLoading: roomsLoading } = useSWR(`${API_URL}?action=getRooms`, fetcher, {
+  const { data: rooms, error: roomsError, isLoading: roomsLoading } = useSWR(`${API_URL}/rooms`, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 600000
   });
 
-  const scheduleKey = selectedRoom ? `${API_URL}?action=getTimeSlots&date=${selectedDate}&room=${selectedRoom}` : null;
+  const scheduleKey = selectedRoom ? `${API_URL}/schedule?date=${selectedDate}&room=${selectedRoom}` : null;
   const { data: scheduleData, error: scheduleError, isLoading: scheduleLoading, mutate: refreshSchedule } = useSWR(scheduleKey, fetcher, {
     revalidateOnFocus: true,
     dedupingInterval: 2000,
@@ -65,7 +65,7 @@ const BookingSystem = () => {
   const handleDateChange = (newDate: React.SetStateAction<string>) => {
     setSelectedDate(newDate);
     if (selectedRoom) {
-      const newScheduleKey = `${API_URL}?action=getTimeSlots&date=${newDate}&room=${selectedRoom}`;
+      const newScheduleKey = `${API_URL}/schedule?date=${newDate}&room=${selectedRoom}`;
       mutate(newScheduleKey, undefined, { revalidate: true });
     }
   };
@@ -80,7 +80,7 @@ const BookingSystem = () => {
   const handleBookingSubmit = async (bookingData: BookingDataProps) => {
     try {
       setIsSubmitting(true);
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/applications`, {
         method: "POST",
         body: JSON.stringify({
           isMultipleBooking: true,
