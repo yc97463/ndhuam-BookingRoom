@@ -32,6 +32,8 @@ CREATE TABLE applications (
   purpose TEXT,
   status TEXT CHECK(status IN ('pending', 'reviewing', 'confirmed', 'rejected')) NOT NULL DEFAULT 'pending',
   submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at DATETIME,
+  review_note TEXT,
   FOREIGN KEY (room_id) REFERENCES rooms(room_id)
 );
 
