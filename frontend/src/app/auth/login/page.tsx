@@ -31,6 +31,7 @@ export default function LoginPage() {
                 setMessage(data.error || '發送驗證信失敗');
             }
         } catch (err) {
+            console.log(err);
             setStatus('error');
             setMessage('系統錯誤，請稍後再試');
         }

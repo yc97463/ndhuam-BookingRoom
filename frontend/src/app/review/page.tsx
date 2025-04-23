@@ -1,102 +1,151 @@
 "use client";
 
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
-import useSWR from 'swr';
-import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const API_URL = `/api`;
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+interface RequestedSlot {
+    id: number;
+    application_id: number;
+    room_id: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+}
 
-function VerifyContent() {
-    const searchParams = useSearchParams();
-    const groupId = searchParams.get('groupId');
-    const token = searchParams.get('token');
-    const isApproved = searchParams.get('isApproved') || 'false';
+interface Application {
+    id: number;
+    name: string;
+    email: string;
+    organization: string;
+    phone: string;
+    purpose: string;
+    room_id: string;
+    submitted_at: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requested_slots: RequestedSlot[];
+}
 
-    const { data, error } = useSWR(
-        token ? `${API_URL}/review?groupId=${groupId}&token=${token}&isApproved=${isApproved}` : null,
-        fetcher,
-        {
-            dedupingInterval: 0,
-            revalidateOnFocus: false,
-            revalidateOnReconnect: false,
-            shouldRetryOnError: false
+function ReviewContent() {
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [applications, setApplications] = useState<Application[]>([]);
+
+    useEffect(() => {
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            router.push('/auth/login');
+            return;
         }
-    );
 
-    if (error) {
+        fetch(`${API_URL}/applications`, {
+            headers: {
+                'Authorization': `Bearer ${adminToken}`
+            }
+        })
+            .then(res => {
+                if (res.status === 401) {
+                    throw new Error('Unauthorized');
+                }
+                if (!res.ok) {
+                    throw new Error('API Error');
+                }
+                return res.json();
+            })
+            .then(data => {
+                setApplications(data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                setError(err.message);
+                setIsLoading(false);
+                if (err.message === 'Unauthorized') {
+                    localStorage.removeItem('adminToken');
+                    router.push('/auth/login');
+                }
+            });
+    }, [router]);
+
+    const handleApprove = async (id: string) => {
+        // Implement approval logic
+    };
+
+    const handleReject = async (id: string) => {
+        // Implement rejection logic
+    };
+
+    if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-red-50 p-4">
-                <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
-                    <AlertTriangle className="mx-auto mb-4 text-red-500" size={64} />
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">Verification Error</h2>
-                    <p className="text-gray-700">Failed to verify. Please check your verification link or try again later.</p>
-                </div>
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="animate-spin" />
             </div>
         );
     }
 
-    if (!data) {
+    if (error) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="text-center">
-                    <Loader2 className="mx-auto mb-4 animate-spin text-blue-500" size={64} />
-                    <p className="text-xl text-gray-700">Verifying your request...</p>
-                </div>
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-red-500">Error: {error}</div>
             </div>
         );
     }
 
     return (
-        <div className={`flex items-center justify-center min-h-screen ${data.success ? 'bg-green-50' : 'bg-red-50'}`}>
-            <div className="bg-white shadow-lg rounded-lg p-8 max-w-xl w-full text-center">
-                {data.success ? (
-                    <CheckCircle2 className="mx-auto mb-4 text-green-500" size={64} />
-                ) : (
-                    <AlertTriangle className="mx-auto mb-4 text-red-500" size={64} />
-                )}
-
-                <h2 className={`text-2xl font-bold mb-4 ${data.success ? 'text-green-600' : 'text-red-600'}`}>
-                    {data.success ? 'Verification Successful' : 'Verification Failed'}
-                </h2>
-
-                {groupId && (
-                    <div className="mb-4 bg-gray-100 rounded p-3">
-                        <p className="text-gray-700 break-all">
-                            <span className="font-semibold">Group ID:</span> {groupId}
-                        </p>
+        <div className="container mx-auto p-4">
+            <h1 className="text-2xl font-bold mb-6">空間申請審核列表</h1>
+            <div className="grid gap-4">
+                {applications.map(app => (
+                    <div key={app.id} className="border rounded-lg p-4 shadow bg-white">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="space-y-2">
+                                <h2 className="text-lg font-semibold">申請人: {app.name}</h2>
+                                <p className="text-gray-600">Email: {app.email}</p>
+                                <p className="text-gray-600">單位: {app.organization}</p>
+                                <p className="text-gray-600">聯絡電話: {app.phone}</p>
+                                <p className="text-gray-600">用途: {app.purpose}</p>
+                                <div className="mt-4">
+                                    <h3 className="font-medium mb-2">申請時段：</h3>
+                                    <div className="space-y-1">
+                                        {app.requested_slots.map((slot, index) => (
+                                            <p key={index} className="text-gray-600">
+                                                {slot.date} {slot.start_time}-{slot.end_time} (房間: {slot.room_id})
+                                            </p>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    // onClick={() => handleApprove(app.id)}
+                                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                >
+                                    同意
+                                </button>
+                                <button
+                                    // onClick={() => handleReject(app.id)}
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                    拒絕
+                                </button>
+                            </div>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                            申請時間: {new Date(app.submitted_at).toLocaleString()}
+                        </div>
                     </div>
-                )}
-
-                {token && (
-                    <div className="mb-4 bg-gray-100 rounded p-3">
-                        <p className="text-gray-700 break-all">
-                            <span className="font-semibold">Admin Token:</span> {token}
-                        </p>
-                    </div>
-                )}
-
-                <p className={`text-lg ${data.success ? 'text-green-700' : 'text-red-700'}`}>
-                    {data.success ? data.message : data.error}
-                </p>
+                ))}
             </div>
         </div>
     );
 }
 
-export default function VerifyPage() {
+export default function ReviewPage() {
     return (
-        <Suspense fallback={
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="text-center">
-                    <Loader2 className="mx-auto mb-4 animate-spin text-blue-500" size={64} />
-                    <p className="text-xl text-gray-700">Loading verification page...</p>
-                </div>
-            </div>
-        }>
-            <VerifyContent />
+        <Suspense fallback={<div>Loading...</div>}>
+            <ReviewContent />
         </Suspense>
     );
 }

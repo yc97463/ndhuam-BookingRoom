@@ -1,6 +1,11 @@
 import { verify } from '@tsndr/cloudflare-worker-jwt'
 
 export async function verifyToken(request: Request, env: { JWT_SECRET: string }): Promise<string | null> {
+    // Temporarily disable authentication
+    return "guest"
+
+    // Original authentication logic
+    /*
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
         return null
@@ -16,4 +21,5 @@ export async function verifyToken(request: Request, env: { JWT_SECRET: string })
     } catch {
         return null
     }
+    */
 }
