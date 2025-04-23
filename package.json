@@ -1,11 +1,17 @@
 {
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250423.0"
+    "@cloudflare/workers-types": "^4.20250423.0",
+    "concurrently": "^9.1.2"
   },
   "scripts": {
     "cf:build": "cd frontend && npm install && npm run build",
     "cf:deploy": "npx wrangler pages deploy frontend/out --project-name=ndhuam-booking",
     "cf": "npm run cf:build && npm run cf:deploy",
-    "dev": "npx wrangler pages dev frontend/out --compatibility-flag=nodejs_compat"
+    "dev": "NODE_ENV=development concurrently \"npm run dev:frontend\" \"npm run dev:api\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:api": "npx wrangler pages dev frontend/out --compatibility-flag=nodejs_compat"
+  },
+  "dependencies": {
+    "@tsndr/cloudflare-worker-jwt": "^3.1.4"
   }
 }

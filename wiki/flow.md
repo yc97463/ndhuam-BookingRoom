@@ -35,37 +35,60 @@ ndhuam-BookingRoom/
 
 ---
 
-## 🔐 JWT 登入與驗證機制
+## 🔐 驗證機制
+
+本系統採用基於 Email 的身份驗證機制，確保只有校內人員（@ndhu.edu.tw）可以存取管理功能。
 
 ### `/api/auth/login.ts`
-提供 POST 介面登入，驗證帳密成功後簽發 JWT：
+提供 POST 介面，透過發送驗證信方式進行登入：
 
 ```ts
 POST /api/auth/login
 {
-  "username": "admin",
-  "password": "secret"
+  "email": "staff@ndhu.edu.tw"
 }
 ```
 
 成功回傳：
 ```json
 {
-  "token": "<JWT>"
+  "message": "Please check your email for verification link"
 }
 ```
 
-### `utils/verifyToken.ts`
-所有需授權的 API 可引入此函式進行驗證：
+### `/api/auth/verify`
+處理驗證連結，並簽發 access token：
+- 驗證連結格式：`/auth/verify?token=<verify_token>`
+- 驗證成功後重導向至：`/auth/callback?token=<access_token>`
+- verify token 有效期限為 10 分鐘
+- access token 有效期限為 24 小時
+
+### 驗證流程
+1. 管理者輸入 @ndhu.edu.tw 信箱
+2. 系統發送一次性驗證連結到信箱
+3. 點擊連結後驗證 verify token
+4. 驗證成功後產生 access token
+5. 前端儲存 access token 用於後續 API 呼叫
+
+### API 授權驗證
+所有需授權的 API 使用 JWT token 進行驗證，token 需透過 Authorization header 傳遞：
 
 ```ts
+// API 呼叫範例
+fetch('/api/applications', {
+  headers: {
+    'Authorization': 'Bearer <access_token>'
+  }
+})
+
+// 後端驗證範例
 import { verifyToken } from "../utils/verifyToken"
 
-const user = await verifyToken(request)
-if (!user) return new Response("Unauthorized", { status: 401 })
+const email = await verifyToken(request)
+if (!email?.endsWith('@ndhu.edu.tw')) {
+    return new Response("Unauthorized", { status: 401 })
+}
 ```
-
-（簽名密鑰可從環境變數如 `JWT_SECRET` 傳入）
 
 ---
 
