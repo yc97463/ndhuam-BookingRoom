@@ -461,7 +461,7 @@ function ReviewContent() {
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-500">
-                                {new Date(app.submitted_at).toLocaleDateString()}
+                                {new Date(app.submitted_at).toISOString().split('T')[0]}
                             </p>
                             <p className={`text-sm ${app.status === 'pending' ? 'text-yellow-500' :
                                 app.status === 'confirmed' ? 'text-green-500' :
