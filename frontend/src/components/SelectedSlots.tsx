@@ -27,7 +27,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                                 e.stopPropagation();
                                 onClearAll();
                             }}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                            className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer"
                         >
                             清除
                         </button>
@@ -36,7 +36,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                                 e.stopPropagation();
                                 onProceed();
                             }}
-                            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors cursor-pointer"
                         >
                             下一步
                         </button>
