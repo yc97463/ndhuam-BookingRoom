@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminNavMenu from '@/components/AdminNavMenu';
 
-export default function ReviewLayout({
+export default function SettingsLayout({
     children,
 }: {
     children: React.ReactNode;
