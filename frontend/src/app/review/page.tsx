@@ -182,7 +182,9 @@ function ApplicationModal({ application, onClose, onReview }: {
                                     .map(([date, slots]) => (
                                         <div key={date} className="bg-gray-50 p-3 rounded">
                                             <div className="flex justify-between items-center mb-3">
-                                                <h4 className="font-medium">{date}</h4>
+                                                <h4 className="font-medium">
+                                                    {date} 星期{['日', '一', '二', '三', '四', '五', '六'][new Date(date).getDay()]}
+                                                </h4>
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={(e) => {
