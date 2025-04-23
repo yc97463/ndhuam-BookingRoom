@@ -9,6 +9,7 @@ import SelectedSlots from "@/components/SelectedSlots";
 import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 import { BookingDataProps, BookingSystemProps, Room } from '@/types';
+import { X } from 'lucide-react';
 
 // API 基礎 URL
 const API_URL = `/api`;
@@ -153,8 +154,15 @@ const BookingSystem = () => {
 
       {/* Booking form modal */}
       {showBookingForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer" onClick={() => setShowBookingForm(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto cursor-default" onClick={(e => e.stopPropagation())}>
+            {/* Close button */}
+            {/* <button
+              onClick={() => setShowBookingForm(false)}
+              className="absolute top-0 right-0 pt-4 pr-4 pb-6 pl-6 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-bl-full shadow-md transition-all duration-200 ease-in-out cursor-pointer hover:bg-gray-100 hover:pl-5 hover:pb-5 hover:pt-3 hover:pr-3"
+            >
+              <X size={24} />
+            </button> */}
             <div className="mb-6">
               <h2 className="text-xl font-bold mb-4">預約申請</h2>
               <div className="bg-white p-4 border rounded mb-4">
