@@ -20,46 +20,51 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             });
         }
 
+        interface SlotReview {
+            slotId: number;
+            status: 'confirmed' | 'rejected';
+        }
+
         interface ReviewRequestBody {
             applicationId: number;
-            status: 'confirmed' | 'rejected';
+            slots: SlotReview[];
             note?: string;
         }
 
-        const { applicationId, status, note } = await request.json() as ReviewRequestBody;
+        const { applicationId, slots, note } = await request.json() as ReviewRequestBody;
 
-        if (!applicationId || !status || !['confirmed', 'rejected'].includes(status)) {
+        if (!applicationId || !slots || !Array.isArray(slots)) {
             return new Response(JSON.stringify({ error: 'Invalid request' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // 狀態映射
-        const dbStatus = status === 'confirmed' ? 'confirmed' : 'rejected';
-
         try {
-            // 使用 D1 的事務 API
-            const success = await env.DB.prepare(`
+            // Update application status based on slots
+            const hasConfirmed = slots.some(slot => slot.status === 'confirmed');
+            const applicationStatus = hasConfirmed ? 'confirmed' : 'rejected';
+
+            await env.DB.prepare(`
                 UPDATE applications 
                 SET status = ?, 
                     review_note = ?,
                     reviewed_at = CURRENT_TIMESTAMP 
                 WHERE id = ?
-            `).bind(dbStatus, note || '', applicationId)
-                .run()
-                .then(async () => {
-                    // 更新相關的時段狀態
-                    return await env.DB.prepare(`
-                      UPDATE requested_slots
-                      SET status = ?
-                      WHERE application_id = ?
-                  `).bind(dbStatus, applicationId).run();
-                });
+            `).bind(applicationStatus, note || '', applicationId).run();
+
+            // Update individual slots
+            for (const slot of slots) {
+                await env.DB.prepare(`
+                    UPDATE requested_slots
+                    SET status = ?
+                    WHERE id = ?
+                `).bind(slot.status, slot.slotId).run();
+            }
 
             return new Response(JSON.stringify({
                 success: true,
-                message: status === 'confirmed' ? '已核准申請' : '已拒絕申請'
+                message: '已更新申請狀態'
             }), {
                 headers: { 'Content-Type': 'application/json' }
             });

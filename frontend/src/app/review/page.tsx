@@ -13,6 +13,7 @@ interface RequestedSlot {
     date: string;
     start_time: string;
     end_time: string;
+    status: 'pending' | 'confirmed' | 'rejected';
 }
 
 interface Application {
@@ -31,16 +32,43 @@ interface Application {
 function ApplicationModal({ application, onClose, onReview }: {
     application: Application | null,
     onClose: () => void,
-    onReview: (id: number, status: 'confirmed' | 'rejected', note: string) => Promise<void>
+    onReview: (id: number, slots: { slotId: number; status: 'confirmed' | 'rejected' }[], note: string) => Promise<void>
 }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [note,] = useState(''); // setNote is not used
+    const [note,] = useState('');
+    const [slotStatuses, setSlotStatuses] = useState<Map<number, 'confirmed' | 'rejected'>>(new Map());
 
-    const handleReview = async (status: 'confirmed' | 'rejected') => {
+    useEffect(() => {
+        if (application) {
+            // Initialize slots with their current status, defaulting to confirmed for pending slots
+            const initialStatuses = new Map();
+            application.requested_slots.forEach(slot => {
+                initialStatuses.set(
+                    slot.id,
+                    slot.status === 'pending' ? 'confirmed' : slot.status
+                );
+            });
+            setSlotStatuses(initialStatuses);
+        }
+    }, [application]);
+
+    const toggleSlotStatus = (slotId: number) => {
+        setSlotStatuses(prev => {
+            const newStatuses = new Map(prev);
+            newStatuses.set(slotId, prev.get(slotId) === 'confirmed' ? 'rejected' : 'confirmed');
+            return newStatuses;
+        });
+    };
+
+    const handleSubmit = async () => {
         if (!application) return;
         setIsSubmitting(true);
         try {
-            await onReview(application.id, status, note);
+            const slots = Array.from(slotStatuses.entries()).map(([slotId, status]) => ({
+                slotId,
+                status
+            }));
+            await onReview(application.id, slots, note);
             onClose();
         } catch (error) {
             console.error('Review error:', error);
@@ -52,8 +80,23 @@ function ApplicationModal({ application, onClose, onReview }: {
 
     if (!application) return null;
 
+    // Group slots by date
+    const groupedSlots = application.requested_slots.reduce((groups, slot) => {
+        const date = slot.date;
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(slot);
+        return groups;
+    }, {} as Record<string, RequestedSlot[]>);
+
+    // Sort slots within each group by time
+    Object.values(groupedSlots).forEach(slots => {
+        slots.sort((a, b) => a.start_time.localeCompare(b.start_time));
+    });
+
     return (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 cursor-pointer" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer" onClick={onClose}>
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative cursor-default" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={onClose}
@@ -87,44 +130,54 @@ function ApplicationModal({ application, onClose, onReview }: {
                     </div>
                     <div>
                         <label className="text-sm text-gray-500">申請時段</label>
-                        <div className="mt-2 space-y-2">
-                            {application.requested_slots.map((slot, index) => (
-                                <div key={index} className="bg-gray-50 p-2 rounded">
-                                    {slot.date} {slot.start_time}-{slot.end_time}
-                                    <span className="ml-2 text-gray-500">({slot.room_id})</span>
-                                </div>
-                            ))}
+                        <div className="mt-2 space-y-4">
+                            {Object.entries(groupedSlots)
+                                .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+                                .map(([date, slots]) => (
+                                    <div key={date} className="bg-gray-50 p-3 rounded">
+                                        <h4 className="font-medium mb-2">{date}</h4>
+                                        <div className="space-y-2">
+                                            {slots.map((slot) => (
+                                                <div key={slot.id}
+                                                    onClick={() => toggleSlotStatus(slot.id)}
+                                                    className="flex items-center justify-between p-2 bg-white rounded cursor-pointer hover:bg-gray-100 hover:ring active:ring-2 active:ring-blue-500">
+                                                    <span>
+                                                        {slot.start_time}-{slot.end_time}
+                                                        <span className="ml-2 text-gray-500">({slot.room_id})</span>
+                                                        {slot.status !== 'pending' && (
+                                                            <span className={`ml-2 text-sm ${slot.status === 'confirmed' ? 'text-green-600' : 'text-red-600'
+                                                                }`}>
+                                                                （原狀態：{slot.status === 'confirmed' ? '已同意' : '已駁回'}）
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    <button
+                                                        className={`px-3 py-1 rounded-full text-sm ${slotStatuses.get(slot.id) === 'confirmed'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-red-100 text-red-700'
+                                                            }`}
+                                                    >
+                                                        {slotStatuses.get(slot.id) === 'confirmed' ? '同意' : '駁回'}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
                         </div>
                     </div>
-                    {/* <div>
-                        <label className="text-sm text-gray-500">審核備註</label>
-                        <textarea
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            className="w-full mt-1 p-2 border rounded"
-                            placeholder="可選填審核意見"
-                            rows={3}
-                        />
-                    </div> */}
-                    <div className="flex justify-end gap-3 mt-6">
+                    <div className="flex justify-end mt-6">
                         <button
-                            onClick={() => handleReview('rejected')}
+                            onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
                         >
-                            {isSubmitting ? '處理中...' : '拒絕'}
-                        </button>
-                        <button
-                            onClick={() => handleReview('confirmed')}
-                            disabled={isSubmitting}
-                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-                        >
-                            {isSubmitting ? '處理中...' : '同意'}
+                            {isSubmitting ? '處理中...' : '確認送出'}
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -171,7 +224,7 @@ function ReviewContent() {
             });
     }, [router]);
 
-    const handleReview = async (id: number, status: 'confirmed' | 'rejected', note: string) => {
+    const handleReview = async (id: number, slots: { slotId: number; status: 'confirmed' | 'rejected' }[], note: string) => {
         const adminToken = localStorage.getItem('adminToken');
         if (!adminToken) {
             router.push('/auth/login');
@@ -186,7 +239,7 @@ function ReviewContent() {
             },
             body: JSON.stringify({
                 applicationId: id,
-                status,
+                slots,
                 note
             })
         });
@@ -195,11 +248,18 @@ function ReviewContent() {
             throw new Error('Review failed');
         }
 
-        // 更新本地狀態
+        // Update local state
         setApplications(apps =>
             apps.map(app =>
                 app.id === id
-                    ? { ...app, status }
+                    ? {
+                        ...app,
+                        status: slots.some(s => s.status === 'confirmed') ? 'confirmed' : 'rejected',
+                        requested_slots: app.requested_slots.map(slot => ({
+                            ...slot,
+                            status: slots.find(s => s.slotId === slot.id)?.status || slot.status
+                        }))
+                    }
                     : app
             )
         );
@@ -259,9 +319,30 @@ function ReviewContent() {
                         onClick={() => setSelectedApp(app)}
                         className="flex justify-between items-center p-4 bg-white rounded-lg shadow hover:shadow-md cursor-pointer"
                     >
-                        <div>
-                            <h3 className="font-medium">{app.name}</h3>
-                            <p className="text-sm text-gray-500">{app.organization}</p>
+                        <div
+                            className="flex gap-4">
+                            <div className="justify-center items-center text-gray-500 font-bold text-lg">
+                                {app.id}
+                            </div>
+                            <div>
+                                <h3 className="font-medium">{app.name} {app.organization}</h3>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {app.requested_slots.length > 0 ? (
+                                        [...new Set(app.requested_slots.map(slot => slot.date))]
+                                            .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+                                            .map(date => (
+                                                <span
+                                                    key={date}
+                                                    className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800"
+                                                >
+                                                    {date}
+                                                </span>
+                                            ))
+                                    ) : (
+                                        <span className="text-sm text-gray-500">無時段資料</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-500">
@@ -284,7 +365,7 @@ function ReviewContent() {
                 onClose={() => setSelectedApp(null)}
                 onReview={handleReview}
             />
-        </div>
+        </div >
     );
 }
 
