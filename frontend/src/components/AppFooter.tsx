@@ -10,11 +10,11 @@ export default function AppFooter() {
                         <p>電話：<a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a></p>
                     </div>
                     <div className="flex gap-4 text-sm">
+                        <Link href="https://am.ndhu.edu.tw" className="text-gray-600 hover:text-gray-800">
+                            應數系網
+                        </Link>
                         <Link href="/review" className="text-gray-600 hover:text-gray-800">
                             審核後台
-                        </Link>
-                        <Link href="/settings" className="text-gray-600 hover:text-gray-800">
-                            系統設定
                         </Link>
                     </div>
                 </div>
