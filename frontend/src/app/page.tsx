@@ -155,8 +155,8 @@ const BookingSystem = () => {
 
         {/* Booking form modal */}
         {showBookingForm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30 cursor-pointer" onClick={() => setShowBookingForm(false)}>
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto cursor-default" onClick={(e => e.stopPropagation())}>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               {/* Close button */}
               {/* <button
                 onClick={() => setShowBookingForm(false)}
@@ -187,10 +187,11 @@ const BookingSystem = () => {
               />
             </div>
           </div>
-        )}
-      </div>
+        )
+        }
+      </div >
       <AppFooter />
-    </div>
+    </div >
   );
 };
 
