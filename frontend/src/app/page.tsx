@@ -22,6 +22,7 @@ const BookingSystem = () => {
   const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   // SWR API 獲取部分
   const { data: rooms, error: roomsError, isLoading: roomsLoading } = useSWR(`${API_URL}/rooms`, fetcher, {
@@ -98,6 +99,7 @@ const BookingSystem = () => {
         alert(`預約成功！已預約 ${slotCount} 個時段，${result.message}`);
         setSelectedSlots([]);
         refreshSchedule(undefined, { revalidate: true });
+        setShowBookingForm(false);
       } else {
         alert("預約失敗：" + (result.error || "請稍後再試"));
       }
@@ -110,11 +112,9 @@ const BookingSystem = () => {
   };
 
   return (
-    <div className="p-4 font-sans">
-      {/* 全局加載遮罩 */}
+    <div className="p-4 font-sans pb-32"> {/* Add padding bottom for floating panel */}
       <LoadingMask loading={isLoading} />
 
-      {/* 系統頭部和控制區域 */}
       <SystemHeader
         rooms={rooms || []}
         selectedRoom={selectedRoom}
@@ -127,7 +127,6 @@ const BookingSystem = () => {
         isRefreshing={isLoading}
       />
 
-      {/* 時段顯示區域 */}
       <div className="overflow-x-auto">
         {scheduleError ? (
           <p className="text-red-500">無法載入時段</p>
@@ -142,41 +141,42 @@ const BookingSystem = () => {
         )}
       </div>
 
-      {/* 預約表單區域 */}
-      {selectedSlots.length > 0 && (
-        <div id="booking-form-section" className="mt-6 p-4 border rounded bg-gray-50">
-          <h2 className="text-lg font-bold mb-4">預約申請表單</h2>
+      {/* Floating selected slots */}
+      <SelectedSlots
+        slots={selectedSlots}
+        onRemoveSlot={(index) => {
+          setSelectedSlots(slots => slots.filter((_, i) => i !== index));
+        }}
+        onClearAll={() => setSelectedSlots([])}
+        onProceed={() => setShowBookingForm(true)}
+      />
 
-          <div className="bg-white p-4 border rounded mb-4">
-            <h3 className="font-bold mb-2">預約說明</h3>
-            <ul className="list-disc pl-5 mb-3">
-              <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
-              <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
-            </ul>
-            <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
+      {/* Booking form modal */}
+      {showBookingForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-4">預約申請</h2>
+              <div className="bg-white p-4 border rounded mb-4">
+                <h3 className="font-bold mb-2">預約說明</h3>
+                <ul className="list-disc pl-5 mb-3">
+                  <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
+                  <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
+                </ul>
+                <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
+              </div>
+            </div>
+
+            <BookingForm
+              selectedSlots={selectedSlots}
+              selectedDate={selectedDate}
+              selectedRoom={selectedRoom}
+              roomId={selectedRoom}
+              roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
+              onClose={() => setShowBookingForm(false)}
+              onSubmit={handleBookingSubmit}
+            />
           </div>
-
-          {/* 已選擇時段區域 */}
-          <SelectedSlots
-            slots={selectedSlots}
-            onRemoveSlot={(index) => {
-              setSelectedSlots(slots => slots.filter((_, i) => i !== index));
-            }}
-            onClearAll={() => setSelectedSlots([])}
-            onProceed={() => {
-              document.getElementById('booking-form-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          />
-
-          <BookingForm
-            selectedSlots={selectedSlots}
-            selectedDate={selectedDate}
-            selectedRoom={selectedRoom}
-            roomId={selectedRoom}
-            roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
-            onClose={() => setSelectedSlots([])}
-            onSubmit={handleBookingSubmit}
-          />
         </div>
       )}
     </div>
