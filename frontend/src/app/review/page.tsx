@@ -24,19 +24,19 @@ interface Application {
     purpose: string;
     room_id: string;
     submitted_at: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'confirmed' | 'rejected';
     requested_slots: RequestedSlot[];
 }
 
 function ApplicationModal({ application, onClose, onReview }: {
     application: Application | null,
     onClose: () => void,
-    onReview: (id: number, status: 'approved' | 'rejected', note: string) => Promise<void>
+    onReview: (id: number, status: 'confirmed' | 'rejected', note: string) => Promise<void>
 }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [note, setNote] = useState('');
+    const [note,] = useState(''); // setNote is not used
 
-    const handleReview = async (status: 'approved' | 'rejected') => {
+    const handleReview = async (status: 'confirmed' | 'rejected') => {
         if (!application) return;
         setIsSubmitting(true);
         try {
@@ -53,11 +53,11 @@ function ApplicationModal({ application, onClose, onReview }: {
     if (!application) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 cursor-pointer" onClick={onClose}>
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative cursor-default" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
                 >
                     <X size={24} />
                 </button>
@@ -115,7 +115,7 @@ function ApplicationModal({ application, onClose, onReview }: {
                             {isSubmitting ? '處理中...' : '拒絕'}
                         </button>
                         <button
-                            onClick={() => handleReview('approved')}
+                            onClick={() => handleReview('confirmed')}
                             disabled={isSubmitting}
                             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
                         >
@@ -171,7 +171,7 @@ function ReviewContent() {
             });
     }, [router]);
 
-    const handleReview = async (id: number, status: 'approved' | 'rejected', note: string) => {
+    const handleReview = async (id: number, status: 'confirmed' | 'rejected', note: string) => {
         const adminToken = localStorage.getItem('adminToken');
         if (!adminToken) {
             router.push('/auth/login');
@@ -223,7 +223,7 @@ function ReviewContent() {
 
     const filteredApplications = applications.filter(app => {
         if (filter === 'pending') return app.status === 'pending';
-        return app.status === 'approved' || app.status === 'rejected';
+        return app.status === 'confirmed' || app.status === 'rejected';
     });
 
     return (
@@ -268,11 +268,11 @@ function ReviewContent() {
                                 {new Date(app.submitted_at).toLocaleDateString()}
                             </p>
                             <p className={`text-sm ${app.status === 'pending' ? 'text-yellow-500' :
-                                app.status === 'approved' ? 'text-green-500' :
+                                app.status === 'confirmed' ? 'text-green-500' :
                                     'text-red-500'
                                 }`}>
                                 {app.status === 'pending' ? '待審核' :
-                                    app.status === 'approved' ? '已同意' : '已拒絕'}
+                                    app.status === 'confirmed' ? '已同意' : '已拒絕'}
                             </p>
                         </div>
                     </div>
