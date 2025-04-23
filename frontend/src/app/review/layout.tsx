@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminNavMenu from '@/components/AdminNavMenu';
 
 export default function ReviewLayout({
     children,
@@ -17,5 +18,12 @@ export default function ReviewLayout({
         }
     }, [router]);
 
-    return <>{children}</>;
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <AdminNavMenu />
+            <main>
+                {children}
+            </main>
+        </div>
+    );
 }
