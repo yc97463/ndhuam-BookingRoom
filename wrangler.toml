@@ -1,0 +1,12 @@
+name = "ndhuam-booking"
+
+site = { bucket = "./frontend/public", entry-point = "functions" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ndhuam-booking"
+database_id = "ad7ed69f-e336-41ef-8ab8-8f5a88d9f145"
+# npx wrangler d1 create ndhuam-booking
+# 查 rooms 表結構 npx wrangler d1 execute ndhuam-booking --command="PRAGMA table_info(rooms);"
+
+

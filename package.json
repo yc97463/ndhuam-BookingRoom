@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250423.0"
+  },
+  "scripts": {
+    "cf:build": "cd frontend && npm install && npm run build",
+    "cf:deploy": "npx wrangler pages deploy frontend/out --project-name=ndhuam-booking",
+    "cf": "npm run cf:build && npm run cf:deploy",
+    "dev": "npx wrangler pages dev frontend/out --compatibility-flag=nodejs_compat"
+  }
+}
