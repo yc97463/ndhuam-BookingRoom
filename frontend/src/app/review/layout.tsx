@@ -14,7 +14,7 @@ export default function ReviewLayout({
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
         if (!token) {
-            router.push('/login');
+            router.push('/auth/login?redirect=/review');
         }
     }, [router]);
 

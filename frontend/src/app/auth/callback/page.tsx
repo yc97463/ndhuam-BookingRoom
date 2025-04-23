@@ -14,7 +14,7 @@ function CallbackContent() {
             localStorage.setItem('adminToken', token);
             router.push('/review');
         } else {
-            router.push('/login');
+            router.push('/auth/login');
         }
     }, [router, searchParams]);
 

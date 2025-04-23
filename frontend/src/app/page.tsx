@@ -9,7 +9,7 @@ import SelectedSlots from "@/components/SelectedSlots";
 import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 import { BookingDataProps, BookingSystemProps, Room } from '@/types';
-import { X } from 'lucide-react';
+import AppFooter from '@/components/AppFooter';
 
 // API 基礎 URL
 const API_URL = `/api`;
@@ -113,80 +113,83 @@ const BookingSystem = () => {
   };
 
   return (
-    <div className="p-4 font-sans pb-32"> {/* Add padding bottom for floating panel */}
-      <LoadingMask loading={isLoading} />
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 p-4 pb-32">
+        <LoadingMask loading={isLoading} />
 
-      <SystemHeader
-        rooms={rooms || []}
-        selectedRoom={selectedRoom}
-        selectedDate={selectedDate}
-        roomsError={roomsError}
-        onRoomSelect={setSelectedRoom}
-        onDateChange={handleDateChange}
-        onDateAdjust={adjustDate}
-        onRefresh={() => refreshSchedule(undefined, { revalidate: true })}
-        isRefreshing={isLoading}
-      />
+        <SystemHeader
+          rooms={rooms || []}
+          selectedRoom={selectedRoom}
+          selectedDate={selectedDate}
+          roomsError={roomsError}
+          onRoomSelect={setSelectedRoom}
+          onDateChange={handleDateChange}
+          onDateAdjust={adjustDate}
+          onRefresh={() => refreshSchedule(undefined, { revalidate: true })}
+          isRefreshing={isLoading}
+        />
 
-      <div className="overflow-x-auto">
-        {scheduleError ? (
-          <p className="text-red-500">無法載入時段</p>
-        ) : scheduleData ? (
-          <ScheduleGrid
-            data={scheduleData}
-            selectedSlots={selectedSlots}
-            onSelectSlot={handleSlotSelection}
-          />
-        ) : (
-          <p>無可用時段</p>
+        <div className="overflow-x-auto">
+          {scheduleError ? (
+            <p className="text-red-500">無法載入時段</p>
+          ) : scheduleData ? (
+            <ScheduleGrid
+              data={scheduleData}
+              selectedSlots={selectedSlots}
+              onSelectSlot={handleSlotSelection}
+            />
+          ) : (
+            <p>無可用時段</p>
+          )}
+        </div>
+
+        {/* Floating selected slots */}
+        <SelectedSlots
+          slots={selectedSlots}
+          onRemoveSlot={(index) => {
+            setSelectedSlots(slots => slots.filter((_, i) => i !== index));
+          }}
+          onClearAll={() => setSelectedSlots([])}
+          onProceed={() => setShowBookingForm(true)}
+        />
+
+        {/* Booking form modal */}
+        {showBookingForm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer" onClick={() => setShowBookingForm(false)}>
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto cursor-default" onClick={(e => e.stopPropagation())}>
+              {/* Close button */}
+              {/* <button
+                onClick={() => setShowBookingForm(false)}
+                className="absolute top-0 right-0 pt-4 pr-4 pb-6 pl-6 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-bl-full shadow-md transition-all duration-200 ease-in-out cursor-pointer hover:bg-gray-100 hover:pl-5 hover:pb-5 hover:pt-3 hover:pr-3"
+              >
+                <X size={24} />
+              </button> */}
+              <div className="mb-6">
+                <h2 className="text-xl font-bold mb-4">預約申請</h2>
+                <div className="bg-white p-4 border rounded mb-4">
+                  <h3 className="font-bold mb-2">預約說明</h3>
+                  <ul className="list-disc pl-5 mb-3">
+                    <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
+                    <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
+                  </ul>
+                  <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
+                </div>
+              </div>
+
+              <BookingForm
+                selectedSlots={selectedSlots}
+                selectedDate={selectedDate}
+                selectedRoom={selectedRoom}
+                roomId={selectedRoom}
+                roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
+                onClose={() => setShowBookingForm(false)}
+                onSubmit={handleBookingSubmit}
+              />
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Floating selected slots */}
-      <SelectedSlots
-        slots={selectedSlots}
-        onRemoveSlot={(index) => {
-          setSelectedSlots(slots => slots.filter((_, i) => i !== index));
-        }}
-        onClearAll={() => setSelectedSlots([])}
-        onProceed={() => setShowBookingForm(true)}
-      />
-
-      {/* Booking form modal */}
-      {showBookingForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer" onClick={() => setShowBookingForm(false)}>
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto cursor-default" onClick={(e => e.stopPropagation())}>
-            {/* Close button */}
-            {/* <button
-              onClick={() => setShowBookingForm(false)}
-              className="absolute top-0 right-0 pt-4 pr-4 pb-6 pl-6 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-bl-full shadow-md transition-all duration-200 ease-in-out cursor-pointer hover:bg-gray-100 hover:pl-5 hover:pb-5 hover:pt-3 hover:pr-3"
-            >
-              <X size={24} />
-            </button> */}
-            <div className="mb-6">
-              <h2 className="text-xl font-bold mb-4">預約申請</h2>
-              <div className="bg-white p-4 border rounded mb-4">
-                <h3 className="font-bold mb-2">預約說明</h3>
-                <ul className="list-disc pl-5 mb-3">
-                  <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
-                  <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
-                </ul>
-                <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
-              </div>
-            </div>
-
-            <BookingForm
-              selectedSlots={selectedSlots}
-              selectedDate={selectedDate}
-              selectedRoom={selectedRoom}
-              roomId={selectedRoom}
-              roomName={rooms?.find((room: Room) => room.roomId === selectedRoom)?.roomName || selectedRoom}
-              onClose={() => setShowBookingForm(false)}
-              onSubmit={handleBookingSubmit}
-            />
-          </div>
-        </div>
-      )}
+      <AppFooter />
     </div>
   );
 };
