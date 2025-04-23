@@ -10,7 +10,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
     if (slots.length === 0) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
             <div className={`container mx-auto transition-all duration-300 ease-in-out ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-64px)]'}`}>
                 {/* Header - Always visible */}
                 <div
