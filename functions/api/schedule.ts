@@ -22,6 +22,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
             return new Response('Missing date or room parameter', { status: 400 });
         }
 
+        // 先確認教室是否存在且啟用中
+        const room = await env.DB.prepare(`
+            SELECT room_id FROM rooms 
+            WHERE room_id = ? AND is_active = 1
+        `).bind(roomId).first();
+
+        if (!room) {
+            return new Response(JSON.stringify({ error: 'Room not found or inactive' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         // 生成一週的日期
         const startDate = new Date(date);
         const days = [];
