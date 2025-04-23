@@ -6,15 +6,23 @@ DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS rooms;
 
 -- 建立基礎表 rooms
-CREATE TABLE rooms (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  room_id TEXT NOT NULL UNIQUE,   -- 如 "A205"
-  room_name TEXT NOT NULL,        -- 如 "電腦教室"
-  location TEXT,                  -- 位置文字敘述（如「理工大樓二樓」）
-  capacity INTEGER,               -- 可容納人數
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS rooms (
+    room_id TEXT PRIMARY KEY,
+    room_name TEXT NOT NULL,
+    location TEXT,
+    capacity INTEGER DEFAULT 0,
+    "order" INTEGER DEFAULT 0,
+    is_active INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add trigger for updated_at
+CREATE TRIGGER IF NOT EXISTS rooms_update_timestamp 
+AFTER UPDATE ON rooms
+BEGIN
+    UPDATE rooms SET updated_at = CURRENT_TIMESTAMP WHERE room_id = NEW.room_id;
+END;
 
 -- 預設教室資料
 INSERT INTO rooms (room_id, room_name, location, capacity) VALUES
