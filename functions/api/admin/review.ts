@@ -22,13 +22,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
         interface ReviewRequestBody {
             applicationId: number;
-            status: 'approved' | 'rejected';
+            status: 'confirmed' | 'rejected';
             note?: string;
         }
 
         const { applicationId, status, note } = await request.json() as ReviewRequestBody;
 
-        if (!applicationId || !status || !['approved', 'rejected'].includes(status)) {
+        if (!applicationId || !status || !['confirmed', 'rejected'].includes(status)) {
             return new Response(JSON.stringify({ error: 'Invalid request' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -36,7 +36,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         }
 
         // 狀態映射
-        const dbStatus = status === 'approved' ? 'confirmed' : 'rejected';
+        const dbStatus = status === 'confirmed' ? 'confirmed' : 'rejected';
 
         try {
             // 使用 D1 的事務 API
@@ -59,7 +59,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
             return new Response(JSON.stringify({
                 success: true,
-                message: status === 'approved' ? '已核准申請' : '已拒絕申請'
+                message: status === 'confirmed' ? '已核准申請' : '已拒絕申請'
             }), {
                 headers: { 'Content-Type': 'application/json' }
             });
