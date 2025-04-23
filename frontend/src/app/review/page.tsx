@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, Copy, Check } from 'lucide-react';
 
 const API_URL = `/api`;
 
@@ -27,6 +27,34 @@ interface Application {
     submitted_at: string;
     status: 'pending' | 'confirmed' | 'rejected';
     requested_slots: RequestedSlot[];
+}
+
+function ClipboardButton({ text }: { text: string }) {
+    const [copied, setCopied] = useState(false);
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+    };
+
+    return (
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                copyToClipboard();
+            }}
+            className={`cursor-pointer ${copied ? 'text-green-500 hover:text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
+            title="Copy to clipboard"
+        >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+        </button>
+    );
 }
 
 function ApplicationModal({ application, onClose, onReview }: {
@@ -124,7 +152,10 @@ function ApplicationModal({ application, onClose, onReview }: {
                         </div>
                         <div>
                             <label className="text-sm text-gray-500">Email</label>
-                            <p className="font-medium">{application.email}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="font-medium">{application.email}</p>
+                                <ClipboardButton text={application.email} />
+                            </div>
                         </div>
                         <div>
                             <label className="text-sm text-gray-500">單位</label>
