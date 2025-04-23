@@ -222,7 +222,7 @@ function ApplicationModal({ application, onClose, onReview }: {
                                                         )}
                                                     </span>
                                                     <button
-                                                        className={`px-3 py-1 rounded-full text-sm ${slotStatuses.get(slot.id) === 'confirmed'
+                                                        className={`px-3 py-1 rounded-full cursor-pointer text-sm ${slotStatuses.get(slot.id) === 'confirmed'
                                                             ? 'bg-green-100 text-green-700'
                                                             : 'bg-red-100 text-red-700'
                                                             }`}
