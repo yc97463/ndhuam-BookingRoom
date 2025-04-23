@@ -145,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
         return new Response(JSON.stringify({
             success: true,
-            message: '預約申請已送出，請查收驗證信',
+            message: '預約申請已送出，請等待應數系辦審核。',
             applicationId,
             verifyToken
         }), {
