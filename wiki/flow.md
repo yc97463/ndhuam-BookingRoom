@@ -35,99 +35,61 @@ ndhuam-BookingRoom/
 
 ---
 
-## 🔐 驗證機制
+## 🗃️ 資料表設計
 
-本系統採用基於 Email 的身份驗證機制，確保只有校內人員（@ndhu.edu.tw）可以存取管理功能。
+### `rooms` 空間資訊表（v2 格式）
+
+```sql
+CREATE TABLE IF NOT EXISTS rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  room_id TEXT NOT NULL UNIQUE,
+  room_name TEXT NOT NULL,
+  location TEXT,
+  capacity INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+- `room_id`：如「A205」，作為邏輯識別碼
+- `room_name`：教室名稱（如「電腦教室」）
+- `location`：描述所在位置（如「理工大樓2樓」）
+- `capacity`：容納人數
+
+可再透過 `updated_at` 配合 trigger 實作自動更新
+
+---
+
+## 🔐 JWT 登入與驗證機制
 
 ### `/api/auth/login.ts`
-提供 POST 介面，透過發送驗證信方式進行登入：
+提供 POST 介面登入，驗證帳密成功後簽發 JWT：
 
 ```ts
 POST /api/auth/login
 {
-  "email": "staff@ndhu.edu.tw"
+  "username": "admin",
+  "password": "secret"
 }
 ```
 
 成功回傳：
 ```json
 {
-  "message": "Please check your email for verification link"
+  "token": "<JWT>"
 }
 ```
 
-### `/api/auth/verify`
-處理驗證連結，並簽發 access token：
-- 驗證連結格式：`/auth/verify?token=<verify_token>`
-- 驗證成功後重導向至：`/auth/callback?token=<access_token>`
-- verify token 有效期限為 10 分鐘
-- access token 有效期限為 24 小時
-
-### 驗證流程
-1. 管理者輸入 @ndhu.edu.tw 信箱
-2. 系統發送一次性驗證連結到信箱
-3. 點擊連結後驗證 verify token
-4. 驗證成功後產生 access token
-5. 前端儲存 access token 用於後續 API 呼叫
-
-### API 授權驗證
-所有需授權的 API 使用 JWT token 進行驗證，token 需透過 Authorization header 傳遞：
+### `utils/verifyToken.ts`
+所有需授權的 API 可引入此函式進行驗證：
 
 ```ts
-// API 呼叫範例
-fetch('/api/applications', {
-  headers: {
-    'Authorization': 'Bearer <access_token>'
-  }
-})
-
-// 後端驗證範例
 import { verifyToken } from "../utils/verifyToken"
 
-const email = await verifyToken(request)
-if (!email?.endsWith('@ndhu.edu.tw')) {
-    return new Response("Unauthorized", { status: 401 })
-}
+const user = await verifyToken(request)
+if (!user) return new Response("Unauthorized", { status: 401 })
 ```
 
----
-
-## 🚀 部署與開發流程
-
-### 🔧 本機開發
-
-```bash
-npm run dev
-```
-這會觸發：
-1. 編譯 Next.js → `frontend/out`
-2. 啟動 Cloudflare Pages dev server（含 API）在 `http://localhost:8788`
-
-### 📦 建構 & 部署（部署到 Cloudflare Pages）
-
-```bash
-npm run build       # 編譯 frontend (next export)
-npm run cf:deploy   # 使用 wrangler 部署到 Pages
-```
-
-根目錄 package.json:
-```json
-{
-  "scripts": {
-    "dev": "npm run build && npx wrangler pages dev frontend/out --compatibility-flag=nodejs_compat",
-    "build": "cd frontend && npm install && npm run build",
-    "cf:deploy": "npx wrangler pages deploy frontend/out --project-name=ndhuam-booking"
-  }
-}
-```
-
-### 🧪 可測試的 API（本機 or Pages）
-
-- `GET /api/slots`：列出所有待審時段
-- `POST /api/applications`：送出一張申請單（含多個時段）
-- `GET /api/applications`：列出所有申請單 + 對應時段（需 JWT）
-- `PATCH /api/slots/:id`：核可/拒絕單一時段（需 JWT）
-- `PATCH /api/applications/:id`：整筆申請單狀態更新（並自動判斷總狀態，需 JWT）
-- `POST /api/auth/login`：取得登入用 JWT（可使用環境變數指定帳密）
+（簽名密鑰可從環境變數如 `JWT_SECRET` 傳入）
 
 ...
