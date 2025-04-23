@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { Loader2, X, Copy, Check } from 'lucide-react';
+import { Loader2, X, Copy, Check, Save, CheckCheck, Hourglass } from 'lucide-react';
 
 const API_URL = `/api`;
 
@@ -52,7 +52,7 @@ function ClipboardButton({ text }: { text: string }) {
             className={`cursor-pointer ${copied ? 'text-green-500 hover:text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
             title="Copy to clipboard"
         >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
+            {copied ? <Check size={18} /> : <Copy size={16} />}
         </button>
     );
 }
@@ -136,117 +136,148 @@ function ApplicationModal({ application, onClose, onReview }: {
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer" onClick={onClose}>
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative cursor-default" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-lg w-full max-w-2xl relative flex flex-col max-h-[90vh] cursor-default" onClick={(e) => e.stopPropagation()}>
+                {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    className="absolute top-0 right-0 pt-4 pr-4 pb-6 pl-6 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-bl-full shadow-md transition-all duration-200 ease-in-out cursor-pointer hover:bg-gray-100 hover:pl-5 hover:pb-5 hover:pt-3 hover:pr-3"
                 >
                     <X size={24} />
                 </button>
-                <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">申請詳情</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm text-gray-500">申請人</label>
-                            <p className="font-medium">{application.name}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm text-gray-500">Email</label>
-                            <div className="flex items-center gap-2">
-                                <p className="font-medium">{application.email}</p>
-                                <ClipboardButton text={application.email} />
+
+                {/* Scrollable content */}
+                <div className="overflow-y-auto flex-1 p-6 pb-0">
+                    <div className="space-y-4">
+                        <h2 className="text-2xl font-bold">申請詳情</h2>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm text-gray-500">申請人</label>
+                                <p className="font-medium">{application.name}</p>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-500">Email</label>
+                                <div className="flex items-center gap-2">
+                                    <p className="font-medium">{application.email}</p>
+                                    <ClipboardButton text={application.email} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-500">單位</label>
+                                <p className="font-medium">{application.organization}</p>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-500">聯絡電話</label>
+                                <p className="font-medium">{application.phone}</p>
                             </div>
                         </div>
                         <div>
-                            <label className="text-sm text-gray-500">單位</label>
-                            <p className="font-medium">{application.organization}</p>
+                            <label className="text-sm text-gray-500">用途</label>
+                            <p className="font-medium">{application.purpose}</p>
                         </div>
                         <div>
-                            <label className="text-sm text-gray-500">聯絡電話</label>
-                            <p className="font-medium">{application.phone}</p>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-sm text-gray-500">用途</label>
-                        <p className="font-medium">{application.purpose}</p>
-                    </div>
-                    <div>
-                        <label className="text-sm text-gray-500">申請時段</label>
-                        <div className="mt-2 space-y-4">
-                            {Object.entries(groupedSlots)
-                                .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-                                .map(([date, slots]) => (
-                                    <div key={date} className="bg-gray-50 p-3 rounded">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <h4 className="font-medium">{date}</h4>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleDateGroupStatus(date, 'rejected');
-                                                    }}
-                                                    className="px-2 py-1 text-sm rounded bg-red-100 text-red-700 hover:bg-red-200 active:ring-2 active:ring-red-500 cursor-pointer"
-                                                >
-                                                    全部駁回
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleDateGroupStatus(date, 'confirmed');
-                                                    }}
-                                                    className="px-2 py-1 text-sm rounded bg-green-100 text-green-700 hover:bg-green-200 active:ring-2 active:ring-green-500 cursor-pointer"
-                                                >
-                                                    全部同意
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {slots.map((slot) => (
-                                                <div key={slot.id}
-                                                    onClick={() => toggleSlotStatus(slot.id)}
-                                                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all duration-200 ease-in-out
-                                                        ${slotStatuses.get(slot.id) === 'confirmed'
-                                                            ? 'bg-green-50 border border-green-200 hover:bg-green-100 hover:border-green-300'
-                                                            : 'bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300'
-                                                        }
-                                                    `}
-                                                >
-                                                    <span>
-                                                        {slot.start_time}-{slot.end_time}
-                                                        <span className="ml-2 text-gray-500">({slot.room_id})</span>
-                                                        {slot.status !== 'pending' && (
-                                                            <span className={`ml-2 text-sm ${slot.status === 'confirmed' ? 'text-green-600' : 'text-red-600'
-                                                                }`}>
-                                                                （原狀態：{slot.status === 'confirmed' ? '已同意' : '已駁回'}）
-                                                            </span>
-                                                        )}
-                                                    </span>
+                            <label className="text-sm text-gray-500">申請時段</label>
+                            <div className="mt-2 space-y-4">
+                                {Object.entries(groupedSlots)
+                                    .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+                                    .map(([date, slots]) => (
+                                        <div key={date} className="bg-gray-50 p-3 rounded">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <h4 className="font-medium">{date}</h4>
+                                                <div className="flex gap-2">
                                                     <button
-                                                        className={`px-3 py-1 rounded-full cursor-pointer text-sm ${slotStatuses.get(slot.id) === 'confirmed'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-red-100 text-red-700'
-                                                            }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleDateGroupStatus(date, 'rejected');
+                                                        }}
+                                                        className="px-2 py-1 text-sm rounded bg-red-100 text-red-700 hover:bg-red-200 active:ring-2 active:ring-red-500 cursor-pointer"
                                                     >
-                                                        {slotStatuses.get(slot.id) === 'confirmed' ? '同意' : '駁回'}
+                                                        全部駁回
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleDateGroupStatus(date, 'confirmed');
+                                                        }}
+                                                        className="px-2 py-1 text-sm rounded bg-green-100 text-green-700 hover:bg-green-200 active:ring-2 active:ring-green-500 cursor-pointer"
+                                                    >
+                                                        全部同意
                                                     </button>
                                                 </div>
-                                            ))}
+                                            </div>
+                                            <div className="space-y-2">
+                                                {slots.map((slot) => (
+                                                    <div key={slot.id}
+                                                        onClick={() => toggleSlotStatus(slot.id)}
+                                                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all duration-200 ease-in-out
+                                                            ${slotStatuses.get(slot.id) === 'confirmed'
+                                                                ? 'bg-green-50 border border-green-200 hover:bg-green-100 hover:border-green-300'
+                                                                : 'bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <span>
+                                                            {slot.start_time}-{slot.end_time}
+                                                            <span className="ml-2 text-gray-500">({slot.room_id})</span>
+                                                            {slot.status !== 'pending' && (
+                                                                <span className={`ml-2 text-sm ${slot.status === 'confirmed' ? 'text-green-600' : 'text-red-600'
+                                                                    }`}>
+                                                                    （原狀態：{slot.status === 'confirmed' ? '已同意' : '已駁回'}）
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                        <button
+                                                            className={`px-3 py-1 rounded-full cursor-pointer text-sm ${slotStatuses.get(slot.id) === 'confirmed'
+                                                                ? 'bg-green-100 text-green-700'
+                                                                : 'bg-red-100 text-red-700'
+                                                                }`}
+                                                        >
+                                                            {slotStatuses.get(slot.id) === 'confirmed' ? '同意' : '駁回'}
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                            </div>
                         </div>
                     </div>
-                    <div className="flex justify-end mt-6">
+                </div>
+
+                {/* Fixed footer */}
+                <div className="px-6 py-4 mt-4 border-t border-gray-100 flex items-center justify-between bg-white">
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                            <span className="text-gray-500 text-gray-500 font-bold text-lg mr-2 ">#{application.id}</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="text-gray-500 text-sm mr-2">借用空間</span>
+                            <span className="font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">{application.room_id}</span>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
+                            className={`min-w-[6rem] px-4 py-2 rounded-full cursor-pointer text-sm font-medium shadow-sm hover:shadow transition-all flex items-center justify-center
+                                ${isSubmitting ? 'bg-gray-300 text-gray-500 disabled:opacity-50' : 'bg-blue-500 text-white hover:bg-blue-600'}
+                                `}
                         >
-                            {isSubmitting ? '處理中...' : '確認送出'}
+                            {isSubmitting ? (
+                                <div className="flex items-center justify-center gap-1">
+                                    <Loader2 className="animate-spin" size={16} />
+                                    <span>儲存中</span>
+                                </div>
+
+                            ) : (
+                                <div className="flex items-center justify-center gap-1">
+                                    <Save size={16} />
+                                    <span>儲存</span>
+                                </div>
+                            )}
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
         </div >
     );
 }
@@ -363,26 +394,38 @@ function ReviewContent() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setFilter('pending')}
-                        className={`px-4 py-2 rounded-full cursor-pointer ${filter === 'pending'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
+                        className={`px-4 py-2 rounded-full cursor-pointer flex items-center gap-1 justify-center
+                             ${filter === 'pending'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-700'
                             }`}
                     >
+                        <Hourglass size={15} />
                         待審核
                     </button>
                     <button
                         onClick={() => setFilter('reviewed')}
-                        className={`px-4 py-2 rounded-full cursor-pointer ${filter === 'reviewed'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700'
+                        className={`px-4 py-2 rounded-full cursor-pointer flex items-center gap-1 justify-center
+                             ${filter === 'reviewed'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-700'
                             }`}
                     >
+                        <CheckCheck size={20} />
                         已處理
                     </button>
                 </div>
             </div>
 
             <div className="space-y-4">
+                {filteredApplications.length === 0 && (
+                    <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow">
+                        <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 font-bold text-2xl mb-2">
+                            好讚，都完成了！
+                        </p>
+                        <p className="text-gray-500">目前沒有符合條件的申請</p>
+                    </div>
+                )}
                 {filteredApplications.map(app => (
                     <div
                         key={app.id}
@@ -392,7 +435,7 @@ function ReviewContent() {
                         <div
                             className="flex gap-4">
                             <div className="justify-center items-center text-gray-500 font-bold text-lg">
-                                {app.id}
+                                #{app.id}
                             </div>
                             <div>
                                 <h3 className="font-medium">{app.name} {app.organization}</h3>
