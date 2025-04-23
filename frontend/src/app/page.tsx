@@ -114,7 +114,7 @@ const BookingSystem = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 p-4 pb-32">
+      <div className="flex-1 p-4">
         <LoadingMask loading={isLoading} />
 
         <SystemHeader

@@ -148,7 +148,7 @@ function ApplicationModal({ application, onClose, onReview }: {
                 {/* Scrollable content */}
                 <div className="overflow-y-auto flex-1 p-6 pb-0">
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-bold">申請詳情</h2>
+                        <h2 className="text-2xl font-bold">申請資訊</h2>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm text-gray-500">申請人</label>
