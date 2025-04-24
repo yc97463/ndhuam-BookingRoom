@@ -19,7 +19,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
         const payload = await request.json() as LoginRequest;
 
-        if (!payload.email?.endsWith('@ndhu.edu.tw')) {
+        if (!payload.email?.endsWith('ndhu.edu.tw')) {
             const error: ErrorResponse = {
                 error: "Invalid email domain",
                 code: "INVALID_EMAIL"

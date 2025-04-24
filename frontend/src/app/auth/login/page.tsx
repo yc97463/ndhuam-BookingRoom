@@ -75,7 +75,7 @@ export default function LoginPage() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="請輸入 @ndhu.edu.tw 信箱"
                                         required
-                                        pattern=".*@ndhu\.edu\.tw$"
+                                        pattern=".*@(.*\.)?ndhu\.edu\.tw$"
                                         className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                                     type="submit"
                                     disabled={status === 'loading'}
                                     className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 
-                                         disabled:bg-blue-300 flex items-center justify-center"
+                                         disabled:bg-blue-300 flex items-center justify-center cursor-pointer"
                                 >
                                     {status === 'loading' ? (
                                         <>
