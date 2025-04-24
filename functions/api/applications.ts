@@ -58,7 +58,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         }
 
         // 驗證信箱格式
-        if (!data.email.endsWith('@ndhu.edu.tw')) {
+        if (!data.email.endsWith('ndhu.edu.tw')) {
             return new Response(JSON.stringify({
                 success: false,
                 error: '請使用東華大學校園信箱'
