@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const API_URL = `/api`;
@@ -43,74 +43,88 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center">
             <div className="max-w-md w-full mx-auto">
-                <div className="space-y-4">
-                    <div className="bg-white p-8 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-bold mb-6 text-center">系統管理登入</h2>
+                <div className="space-y-6">
+                    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-sm">
+                                <Shield size={20} />
+                            </div>
+                            <div className="space-y-0.5">
+                                <h2 className="text-xl font-bold text-gray-900">管理員登入</h2>
+                                <p className="text-sm text-gray-500">使用校園信箱進行驗證</p>
+                            </div>
+                        </div>
 
                         {status === 'success' ? (
-                            <div className="bg-green-50 border border-green-200 p-4 rounded-md text-green-700">
-                                {message}
+                            <div className="bg-green-50 border border-green-200 p-5 rounded-lg text-green-700">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <CheckCircle size={18} className="text-green-600" />
+                                    <p className="font-medium text-green-800">驗證信已發送</p>
+                                </div>
+                                <p className="mb-3">{message}</p>
                                 {temp_token && (
-                                    <p className="mt-2">
-                                        <Link
-                                            href={`/auth/callback?token=${temp_token}`}
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            請暫時按這裡登入
-                                        </Link>
-                                    </p>
+                                    <Link
+                                        href={`/auth/callback?token=${temp_token}`}
+                                        className="block mt-4 bg-orange-600 text-white py-2 px-4 rounded-lg text-center hover:bg-green-700 transition-colors"
+                                    >
+                                        請暫時按此登入系統
+                                    </Link>
                                 )}
                             </div>
                         ) : (
-
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
                                         校園信箱
                                     </label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="請輸入 @ndhu.edu.tw 信箱"
-                                        required
-                                        pattern=".*@(.*\.)?ndhu\.edu\.tw$"
-                                        className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Mail size={16} className="text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="請輸入 @ndhu.edu.tw 信箱"
+                                            required
+                                            pattern=".*@(.*\.)?ndhu\.edu\.tw$"
+                                            className="w-full py-2.5 pl-10 pr-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        將發送一封驗證信至您的校園信箱進行管理權限驗證
+                                    </p>
                                 </div>
 
                                 {status === 'error' && (
-                                    <div className="text-red-600 text-sm">{message}</div>
+                                    <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
+                                        {message}
+                                    </div>
                                 )}
 
                                 <button
                                     type="submit"
                                     disabled={status === 'loading'}
-                                    className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 
-                                         disabled:bg-blue-300 flex items-center justify-center cursor-pointer"
+                                    className="w-full bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 
+                                         disabled:bg-blue-300 flex items-center justify-center cursor-pointer shadow-sm transition-colors"
                                 >
                                     {status === 'loading' ? (
-                                        <>
-                                            <Loader2 className="animate-spin mr-2" size={18} />
-                                            發送驗證信中...
-                                        </>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 className="animate-spin" size={18} />
+                                            <span>發送中...</span>
+                                        </div>
                                     ) : (
-                                        '發送驗證信'
+                                        <span>發送驗證信</span>
                                     )}
                                 </button>
-
-                                <p className="text-sm text-gray-500 text-center mt-4">
-                                    將發送驗證信至您的校園信箱
-                                </p>
                             </form>
-
                         )}
                     </div>
-                    <div>
-                        <Link href="/" className="text-blue-600 hover:underline flex items-center">
-                            <ArrowLeft size={16} className="inline mr-1" />
-                            返回首頁
+
+                    <div className="px-2">
+                        <Link href="/" className="text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition-colors">
+                            <ArrowLeft size={16} />
+                            <span>返回首頁</span>
                         </Link>
                     </div>
                 </div>
