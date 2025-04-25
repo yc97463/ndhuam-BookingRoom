@@ -405,39 +405,57 @@ function ReviewContent() {
                         onClick={() => setSelectedApp(app)}
                         className="flex justify-between items-center p-4 bg-white rounded-lg shadow hover:shadow-md cursor-pointer"
                     >
-                        <div
-                            className="flex gap-4">
-                            <div className="justify-center items-center text-gray-500 font-bold text-lg">
-                                #{app.id}
+                        <div className="flex gap-4 flex-1">
+                            <div className="flex flex-col items-center justify-center px-4 py-2 bg-gray-50 rounded-lg">
+                                <span className="text-xs text-gray-500">申請編號</span>
+                                <span className="text-lg font-bold text-gray-700">#{app.id}</span>
                             </div>
-                            <div>
-                                <h3 className="font-medium">{app.name} {app.organization}</h3>
-                                <div className="flex flex-wrap gap-1 mt-1">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <h3 className="font-medium">{app.name}</h3>
+                                    <span className="text-sm text-gray-500">{app.organization}</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <div className="px-2.5 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-md font-medium">
+                                        {app.room_id}
+                                    </div>
+                                    <div className="h-1 w-1 rounded-full bg-gray-300" />
                                     {app.requested_slots.length > 0 ? (
                                         [...new Set(app.requested_slots.map(slot => slot.date))]
                                             .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-                                            .map(date => (
-                                                <span
-                                                    key={date}
-                                                    className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800"
-                                                >
-                                                    {date}
-                                                </span>
-                                            ))
+                                            .map(date => {
+                                                const dateObj = new Date(date);
+                                                const month = dateObj.getMonth() + 1;
+                                                const day = dateObj.getDate();
+                                                const weekday = ['日', '一', '二', '三', '四', '五', '六'][dateObj.getDay()];
+                                                return (
+                                                    <div
+                                                        key={date}
+                                                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md text-gray-700"
+                                                    >
+                                                        <span className="text-xs text-gray-500">{month}/{day}</span>
+                                                        <span className="text-sm font-medium">週{weekday}</span>
+                                                    </div>
+                                                );
+                                            })
                                     ) : (
                                         <span className="text-sm text-gray-500">無時段資料</span>
                                     )}
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500">
-                                {new Date(app.submitted_at).toISOString().split('T')[0]}
+                        <div className="text-right shrink-0 pl-4">
+                            <p className="text-sm text-gray-500 mb-1">
+                                申請時間：{new Date(app.submitted_at).toLocaleDateString()}
                             </p>
-                            <p className={`text-sm ${app.status === 'pending' ? 'text-yellow-500' :
-                                app.status === 'confirmed' ? 'text-green-500' :
-                                    'text-red-500'
-                                }`}>
+                            <p className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium
+                                ${app.status === 'pending'
+                                    ? 'bg-yellow-50 text-yellow-700'
+                                    : app.status === 'confirmed'
+                                        ? 'bg-green-50 text-green-700'
+                                        : 'bg-red-50 text-red-700'
+                                }`}
+                            >
                                 {app.status === 'pending' ? '待審核' :
                                     app.status === 'confirmed' ? '已同意' : '已拒絕'}
                             </p>
@@ -451,7 +469,7 @@ function ReviewContent() {
                 onClose={() => setSelectedApp(null)}
                 onReview={handleReview}
             />
-        </div >
+        </div>
     );
 }
 
