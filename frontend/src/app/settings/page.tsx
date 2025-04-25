@@ -14,10 +14,6 @@ export default function SettingsPage() {
     const [nextTempId, setNextTempId] = useState(1);
     const router = useRouter();
 
-    useEffect(() => {
-        fetchRooms();
-    }, []);
-
     const fetchRooms = async () => {
         try {
             const response = await fetchWithAuth('/api/admin/rooms');
@@ -29,6 +25,10 @@ export default function SettingsPage() {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchRooms();
+    }, []);
 
     const addRoom = () => {
         const tempId = `TEMP-${nextTempId}`;
