@@ -127,53 +127,71 @@ export default function SettingsPage() {
                                     <GripVertical size={20} />
                                 </button>
                                 <div className="flex-1 grid grid-cols-2 gap-4">
-                                    <input
-                                        type="text"
-                                        value={room.roomId}
-                                        onChange={(e) => updateRoom(index, { roomId: e.target.value })}
-                                        placeholder="空間代碼 (如: A205)"
-                                        className="px-2 py-1 border rounded"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={room.roomName}
-                                        onChange={(e) => updateRoom(index, { roomName: e.target.value })}
-                                        placeholder="空間名稱 (如: 電腦教室)"
-                                        className="px-2 py-1 border rounded"
-                                    />
+                                    <div>
+                                        <label className="block text-sm text-gray-500 mb-1">空間編號</label>
+                                        <input
+                                            type="text"
+                                            value={room.roomId}
+                                            onChange={(e) => updateRoom(index, { roomId: e.target.value })}
+                                            placeholder="如: A205"
+                                            className="px-2 py-1 border rounded w-full"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-500 mb-1">空間名稱</label>
+                                        <input
+                                            type="text"
+                                            value={room.roomName}
+                                            onChange={(e) => updateRoom(index, { roomName: e.target.value })}
+                                            placeholder="如: 電腦教室"
+                                            className="px-2 py-1 border rounded w-full"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-4 pl-10">
-                                <input
-                                    type="text"
-                                    value={room.location}
-                                    onChange={(e) => updateRoom(index, { location: e.target.value })}
-                                    placeholder="位置描述 (如: 理工大樓2樓)"
-                                    className="flex-1 px-2 py-1 border rounded"
-                                />
-                                <input
-                                    type="number"
-                                    value={room.capacity}
-                                    onChange={(e) => updateRoom(index, { capacity: parseInt(e.target.value) || 0 })}
-                                    placeholder="容納人數"
-                                    min="0"
-                                    className="w-24 px-2 py-1 border rounded"
-                                />
-                                <button
-                                    onClick={() => updateRoom(index, { isActive: !room.isActive })}
-                                    className={`px-3 py-1 rounded text-sm min-w-[4rem] cursor-pointer ${room.isActive
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-gray-100 text-gray-700'
-                                        }`}
-                                >
-                                    {room.isActive ? '啟用中' : '停用'}
-                                </button>
-                                <button
-                                    onClick={() => removeRoom(index)}
-                                    className="text-red-500 hover:text-red-700 cursor-pointer"
-                                >
-                                    <Trash2 size={20} />
-                                </button>
+                                <div className="flex-1">
+                                    <label className="block text-sm text-gray-500 mb-1">所在位置</label>
+                                    <input
+                                        type="text"
+                                        value={room.location}
+                                        onChange={(e) => updateRoom(index, { location: e.target.value })}
+                                        placeholder="如: 理工大樓2樓"
+                                        className="px-2 py-1 border rounded w-full"
+                                    />
+                                </div>
+                                <div className="w-24">
+                                    <label className="block text-sm text-gray-500 mb-1">容納人數</label>
+                                    <input
+                                        type="number"
+                                        value={room.capacity}
+                                        onChange={(e) => updateRoom(index, { capacity: parseInt(e.target.value) || 0 })}
+                                        placeholder="人數"
+                                        min="0"
+                                        className="px-2 py-1 border rounded w-full"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-gray-500 mb-1">空間操作</label>
+                                    <div className="flex gap-2">
+
+                                        <button
+                                            onClick={() => updateRoom(index, { isActive: !room.isActive })}
+                                            className={`px-3 py-1 rounded text-sm min-w-[4rem] cursor-pointer ${room.isActive
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-gray-100 text-gray-700'
+                                                }`}
+                                        >
+                                            {room.isActive ? '啟用中' : '停用'}
+                                        </button>
+                                        <button
+                                            onClick={() => removeRoom(index)}
+                                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
