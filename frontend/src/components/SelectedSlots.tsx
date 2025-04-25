@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, X, Calendar, Clock } from 'lucide-react';
 import { SelectedSlotsProps } from '@/types';
 
 const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedSlotsProps) => {
@@ -10,59 +10,103 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
     if (slots.length === 0) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-20">
-            <div className={`container mx-auto transition-all duration-300 ease-in-out ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-64px)]'}`}>
-                {/* Header - Always visible */}
-                <div
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                >
-                    <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-blue-700">已選擇 {slots.length} 個時段</h3>
-                        {isExpanded ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onClearAll();
-                            }}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer"
-                        >
-                            清除
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onProceed();
-                            }}
-                            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors cursor-pointer"
-                        >
-                            下一步
-                        </button>
-                    </div>
-                </div>
+        <div className="fixed bottom-0 left-0 right-0 z-30">
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-white/80 backdrop-blur-md"></div>
 
-                {/* Expandable Content */}
-                <div className={`px-4 pb-4 space-y-2 ${isExpanded ? 'block' : 'hidden'}`}>
-                    <div className="flex flex-wrap gap-2">
-                        {slots.map((slot, index) => (
-                            <div
-                                key={`${slot.date}-${slot.time}`}
-                                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
-                            >
-                                <span>{slot.date} {slot.time}-{slot.endTime}</span>
-                                <button
-                                    className="ml-2 text-blue-600 hover:text-blue-800"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemoveSlot(index);
-                                    }}
-                                >
-                                    ✕
-                                </button>
+            <div className={`container mx-auto transition-all duration-300 ease-in-out relative 
+                ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-64px)]'}`}
+            >
+                <div className="mx-4 mb-4 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+                    {/* Header - Always visible */}
+                    <div
+                        className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-lg shadow-sm">
+                                <Calendar size={18} />
                             </div>
-                        ))}
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-medium text-gray-800">已選擇 {slots.length} 個時段</h3>
+                                    <div className="w-5 h-5 flex items-center justify-center bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                                        {slots.length}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500">點擊展開或收合時段列表</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClearAll();
+                                }}
+                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
+                                清除全部
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onProceed();
+                                }}
+                                className="px-5 py-1.5 bg-blue-500 text-sm text-white rounded-lg hover:bg-blue-600 shadow-sm shadow-blue-500/20 hover:shadow-blue-500/30 transition-all cursor-pointer"
+                            >
+                                下一步
+                            </button>
+                            <div className="w-8 h-8 flex items-center justify-center text-blue-500 rounded-full hover:bg-blue-50 transition-colors">
+                                {isExpanded ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Expandable Content */}
+                    <div className={`px-4 pb-4 space-y-3 ${isExpanded ? 'block' : 'hidden'}`}>
+                        <div className="pt-2 border-t border-gray-100">
+                            {/* Group slots by date */}
+                            {Object.entries(slots.reduce((acc, slot) => {
+                                if (!acc[slot.date]) acc[slot.date] = [];
+                                acc[slot.date].push(slot);
+                                return acc;
+                            }, {} as Record<string, typeof slots>)).map(([date, dateSlots]) => (
+                                <div key={date} className="mb-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-700 rounded-md">
+                                            <Calendar size={14} />
+                                        </div>
+                                        <h4 className="text-sm font-medium text-gray-700">{date}</h4>
+                                    </div>
+                                    <div className="ml-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                        {dateSlots.map((slot, index) => {
+                                            const slotIndex = slots.findIndex(
+                                                s => s.date === slot.date && s.time === slot.time
+                                            );
+                                            return (
+                                                <div
+                                                    key={`${slot.date}-${slot.time}`}
+                                                    className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-2 rounded-lg group transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock size={14} className="text-gray-400" />
+                                                        <span className="text-sm text-gray-700">{slot.time}-{slot.endTime}</span>
+                                                    </div>
+                                                    <button
+                                                        className="opacity-60 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onRemoveSlot(slotIndex);
+                                                        }}
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
