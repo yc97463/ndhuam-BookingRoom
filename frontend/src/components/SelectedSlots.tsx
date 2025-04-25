@@ -9,12 +9,32 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
 
     if (slots.length === 0) return null;
 
+    // Group and sort slots by date (nearest first)
+    const groupedSlots = slots.reduce((acc, slot) => {
+        if (!acc[slot.date]) acc[slot.date] = [];
+        acc[slot.date].push(slot);
+        return acc;
+    }, {} as Record<string, typeof slots>);
+
+    // Sort dates from nearest to furthest
+    const sortedDates = Object.keys(groupedSlots).sort((a, b) =>
+        new Date(a).getTime() - new Date(b).getTime()
+    );
+
+    // Sort slots within each date by time (earliest first)
+    Object.values(groupedSlots).forEach(dateSlots => {
+        dateSlots.sort((a, b) =>
+            a.time.localeCompare(b.time)
+        );
+    });
+
     return (
         <div className="fixed bottom-0 left-0 right-0 z-30">
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-white/80 backdrop-blur-md"></div>
 
-            <div className={`container mx-auto transition-all duration-300 ease-in-out relative 
-                ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-64px)]'}`}
+            <div
+                className={`container mx-auto transition-all duration-300 ease-in-out relative 
+                    ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-64px)]'}`}
             >
                 <div className="mx-4 mb-4 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
                     {/* Header - Always visible */}
@@ -33,7 +53,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                                         {slots.length}
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-500">點此展開或收合時段列表</p>
+                                <p className="text-xs text-gray-500">按這裡展開或收合時段列表</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -61,24 +81,24 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                         </div>
                     </div>
 
-                    {/* Expandable Content */}
-                    <div className={`px-4 pb-4 space-y-3 ${isExpanded ? 'block' : 'hidden'}`}>
+                    {/* Expandable Content using Tailwind's dvh (dynamic viewport height) */}
+                    <div
+                        className={`px-4 pb-4 ${isExpanded ? 'block' : 'hidden'} overflow-y-auto max-h-[50dvh]`}
+                    >
                         <div className="pt-2 border-t border-gray-100">
-                            {/* Group slots by date */}
-                            {Object.entries(slots.reduce((acc, slot) => {
-                                if (!acc[slot.date]) acc[slot.date] = [];
-                                acc[slot.date].push(slot);
-                                return acc;
-                            }, {} as Record<string, typeof slots>)).map(([date, dateSlots]) => (
+                            {/* Group slots by date and sort them */}
+                            {sortedDates.map(date => (
                                 <div key={date} className="mb-3">
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-2 sticky top-0 bg-white py-2 z-10">
                                         <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-700 rounded-md">
                                             <Calendar size={14} />
                                         </div>
-                                        <h4 className="text-sm font-medium text-gray-700">{date}</h4>
+                                        <h4 className="text-sm font-medium text-gray-700">
+                                            {date} 星期{['日', '一', '二', '三', '四', '五', '六'][new Date(date).getDay()]}
+                                        </h4>
                                     </div>
                                     <div className="ml-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                        {dateSlots.map((slot, index) => {
+                                        {groupedSlots[date].map(slot => {
                                             const slotIndex = slots.findIndex(
                                                 s => s.date === slot.date && s.time === slot.time
                                             );
