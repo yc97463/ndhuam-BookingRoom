@@ -55,7 +55,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                 subject: "登入驗證連結 - NDHU AM Room Booking",
                 content: [{
                     type: "text/plain",
-                    value: `請點擊以下連結登入系統：\n\n${verifyUrl}\n\n此連結將在 10 分鐘後失效。`
+                    value: `請按這裡以下連結登入系統：\n\n${verifyUrl}\n\n此連結將在 10 分鐘後失效。`
                 }]
             })
         });
