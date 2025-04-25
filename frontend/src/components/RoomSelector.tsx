@@ -9,7 +9,7 @@ export default function RoomSelector({ rooms, selectedRoom, onSelect }: RoomSele
             <select
                 value={selectedRoom}
                 onChange={(e) => onSelect(e.target.value)}
-                className="border p-2 rounded w-40"
+                className="border p-2 rounded"
             >
                 {rooms.map((room) => (
                     <option key={room.roomId} value={room.roomId}>

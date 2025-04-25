@@ -5,10 +5,10 @@ import React from 'react';
 import { RefreshButtonProps } from '@/types';
 import { RefreshCcw } from 'lucide-react';
 
-const RefreshButton = ({ onRefresh, isLoading }: RefreshButtonProps) => {
+const RefreshButton = ({ onRefresh, isLoading, className }: RefreshButtonProps) => {
     return (
         <button
-            className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-colors cursor-pointer"
+            className={className}
             onClick={onRefresh}
             disabled={isLoading}
         >

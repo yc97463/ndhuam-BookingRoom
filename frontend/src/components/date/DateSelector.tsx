@@ -19,7 +19,7 @@ export default function DateSelector({ selectedDate, onChange }: DateSelectorPro
             value={selectedDate}
             min={today}
             onChange={handleChange}
-            className="border border-gray-300 p-2 rounded w-40 hover:bg-gray-50 cursor-pointer"
+            className="border border-gray-300 p-2 rounded hover:bg-gray-50 cursor-pointer"
         />
     );
 }
