@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Loader2, GripVertical, Plus, Trash2, Save } from 'lucide-react';
 import type { Room } from '@/types/room';
+import { useRouter } from 'next/navigation';
+import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
 
 export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -10,6 +12,7 @@ export default function SettingsPage() {
     const [, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [nextTempId, setNextTempId] = useState(1);
+    const router = useRouter();
 
     useEffect(() => {
         fetchRooms();
@@ -17,13 +20,8 @@ export default function SettingsPage() {
 
     const fetchRooms = async () => {
         try {
-            const response = await fetch('/api/admin/rooms', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                }
-            });
-            if (!response.ok) throw new Error('Failed to fetch rooms');
-            const data = await response.json();
+            const response = await fetchWithAuth('/api/admin/rooms');
+            const data = await handleApiResponse(response, router);
             setRooms(data);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error');
@@ -72,16 +70,13 @@ export default function SettingsPage() {
     const saveRooms = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch('/api/admin/rooms', {
+            const response = await fetchWithAuth('/api/admin/rooms', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ rooms })
             });
-            if (!response.ok) throw new Error('Failed to save rooms');
-            await fetchRooms(); // Refresh data
+
+            await handleApiResponse(response, router);
+            await fetchRooms();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to save');
         } finally {

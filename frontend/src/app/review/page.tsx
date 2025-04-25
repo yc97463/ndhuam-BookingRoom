@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { Loader2, X, Copy, Check, Save, CheckCheck, Hourglass } from 'lucide-react';
+import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
 
 const API_URL = `/api`;
 
@@ -293,79 +294,49 @@ function ReviewContent() {
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
 
     useEffect(() => {
-        const adminToken = localStorage.getItem('adminToken');
-        if (!adminToken) {
-            router.push('/auth/login');
-            return;
-        }
-
-        fetch(`${API_URL}/applications`, {
-            headers: {
-                'Authorization': `Bearer ${adminToken}`
-            }
-        })
-            .then(res => {
-                if (res.status === 401) {
-                    throw new Error('Unauthorized');
-                }
-                if (!res.ok) {
-                    throw new Error('API Error');
-                }
-                return res.json();
-            })
-            .then(data => {
+        const loadApplications = async () => {
+            try {
+                const response = await fetchWithAuth(`${API_URL}/applications`);
+                const data = await handleApiResponse(response, router);
                 setApplications(data);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Unknown error');
+            } finally {
                 setIsLoading(false);
-            })
-            .catch(err => {
-                setError(err.message);
-                setIsLoading(false);
-                if (err.message === 'Unauthorized') {
-                    localStorage.removeItem('adminToken');
-                    router.push('/auth/login');
-                }
-            });
+            }
+        };
+
+        loadApplications();
     }, [router]);
 
     const handleReview = async (id: number, slots: { slotId: number; status: 'confirmed' | 'rejected' }[], note: string) => {
-        const adminToken = localStorage.getItem('adminToken');
-        if (!adminToken) {
-            router.push('/auth/login');
-            return;
+        try {
+            const response = await fetchWithAuth(`${API_URL}/admin/review`, {
+                method: 'POST',
+                body: JSON.stringify({ applicationId: id, slots, note })
+            });
+
+            await handleApiResponse(response, router);
+
+            // Update local state only after successful API call
+            setApplications(apps =>
+                apps.map(app =>
+                    app.id === id
+                        ? {
+                            ...app,
+                            status: slots.some(s => s.status === 'confirmed') ? 'confirmed' : 'rejected',
+                            requested_slots: app.requested_slots.map(slot => ({
+                                ...slot,
+                                status: slots.find(s => s.slotId === slot.id)?.status || slot.status
+                            }))
+                        }
+                        : app
+                )
+            );
+        } catch (err) {
+            console.error('Review error:', err);
+            alert('審核失敗，請稍後再試');
         }
-
-        const response = await fetch(`${API_URL}/admin/review`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                applicationId: id,
-                slots,
-                note
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Review failed');
-        }
-
-        // Update local state
-        setApplications(apps =>
-            apps.map(app =>
-                app.id === id
-                    ? {
-                        ...app,
-                        status: slots.some(s => s.status === 'confirmed') ? 'confirmed' : 'rejected',
-                        requested_slots: app.requested_slots.map(slot => ({
-                            ...slot,
-                            status: slots.find(s => s.slotId === slot.id)?.status || slot.status
-                        }))
-                    }
-                    : app
-            )
-        );
     };
 
     if (isLoading) {

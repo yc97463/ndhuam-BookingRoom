@@ -1,6 +1,6 @@
 // functions/api/applications.ts
 import { Env } from "../env";
-import { sign } from '@tsndr/cloudflare-worker-jwt';
+import { sign, verify } from '@tsndr/cloudflare-worker-jwt';
 
 interface BookingSlot {
     date: string;
@@ -17,8 +17,25 @@ interface BookingRequest {
     multipleSlots: BookingSlot[];
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     try {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const isValid = await verify(token, env.JWT_SECRET);
+        if (!isValid) {
+            return new Response(JSON.stringify({ error: 'Invalid token' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         // 撈出所有 applications（含申請人資訊）
         const applications = await env.DB.prepare(
             `SELECT * FROM applications ORDER BY submitted_at DESC`
@@ -38,8 +55,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
             headers: { "Content-Type": "application/json" },
         });
     } catch (err) {
-        console.error("GET /api/applications error", err);
-        return new Response("Internal Server Error", { status: 500 });
+        console.error("GET /api/applications error:", err);
+        return new Response(JSON.stringify({
+            error: err.message || 'Internal Server Error'
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 };
 
