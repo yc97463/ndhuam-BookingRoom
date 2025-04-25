@@ -1,9 +1,9 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-interface ApiResponse {
-    error?: string;
-    status?: number;
-}
+// interface ApiResponse {
+//     error?: string;
+//     status?: number;
+// }
 
 export const handleApiResponse = async (
     response: Response,
