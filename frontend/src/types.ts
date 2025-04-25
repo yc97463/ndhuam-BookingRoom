@@ -84,6 +84,7 @@ export interface DateNavigatorProps {
 export interface RefreshButtonProps {
     onRefresh: () => void;
     isLoading?: boolean;
+    className?: string;
 }
 
 export interface SelectedSlotsProps {

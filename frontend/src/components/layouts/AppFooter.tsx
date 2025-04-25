@@ -3,50 +3,43 @@ import { ExternalLink, School, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function AppFooter() {
     return (
-        <footer className="mt-auto backdrop-blur-sm border-t">
-            <div className="absolute inset-x-0 h-32 bg-gradient-to-b from-white via-white to-transparent" />
-            <div className="mx-w-screen px-4 py-8 relative">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-12">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20">
-                                <School size={20} />
-                            </div>
-                            <div className="space-y-0.5">
-                                <h3 className="text-gray-950 font-bold">國立東華大學</h3>
-                                <p className="text-sm text-gray-500">應用數學系</p>
-                            </div>
+        <footer className="mt-auto border-t border-gray-100">
+            <div className="container mx-auto px-4 py-6">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 flex items-center justify-center bg-blue-50 text-blue-500 rounded-lg">
+                            <School size={18} />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <a href="mailto:am@gms.ndhu.edu.tw"
-                                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors group">
-                                <Mail size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                                am@gms.ndhu.edu.tw
-                            </a>
-                            <a href="tel:03-8903513"
-                                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors group">
-                                <Phone size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                                03-8903513
-                            </a>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 group">
-                                <MapPin size={14} className="text-gray-400" />
-                                974301 花蓮縣壽豐鄉志學村大學路二段1號
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-gray-700">國立東華大學應用數學系</p>
+                                <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded">NDHU AM</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                <a href="mailto:am@gms.ndhu.edu.tw" className="hover:text-blue-600 transition-colors">
+                                    am@gms.ndhu.edu.tw
+                                </a>
+                                <span className="h-1 w-1 rounded-full bg-gray-300"></span>
+                                <a href="tel:03-8903513" className="hover:text-blue-600 transition-colors">
+                                    03-8903513
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 text-sm">
                         <Link
                             href="https://am.ndhu.edu.tw"
                             target="_blank"
-                            className="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-xl hover:bg-blue-50/80 border border-gray-100 transition-all duration-200 group"
+                            className="px-3 py-1.5 text-gray-500 hover:text-gray-800 flex items-center gap-1 group"
                         >
-                            系網
-                            <ExternalLink size={14} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                            <span>系網</span>
+                            <ExternalLink size={14} className="opacity-70 group-hover:opacity-100" />
                         </Link>
+                        <span className="h-4 w-px bg-gray-200"></span>
                         <Link
                             href="/review"
-                            className="flex items-center gap-1.5 px-4 py-2 text-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+                            className="px-3 py-1.5 text-gray-500 hover:text-gray-800"
                         >
                             管理後台
                         </Link>
