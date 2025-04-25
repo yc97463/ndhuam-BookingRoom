@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import useSWR, { mutate } from 'swr';
-import SystemHeader from "@/components/SystemHeader";
+import SystemHeader from "@/components/layouts/AppHeader";
 import ScheduleGrid from "@/components/ScheduleGrid";
 import SelectedSlots from "@/components/SelectedSlots";
 import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 import { BookingDataProps, BookingSystemProps, Room } from '@/types';
-import AppFooter from '@/components/AppFooter';
+import AppFooter from '@/components/layouts/AppFooter';
 
 // API 基礎 URL
 const API_URL = `/api`;
@@ -156,7 +156,7 @@ const BookingSystem = () => {
         {/* Booking form modal */}
         {showBookingForm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               {/* Close button */}
               {/* <button
                 onClick={() => setShowBookingForm(false)}
