@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ExternalLink, School, Mail, Phone, MapPin } from 'lucide-react';
+import { ExternalLink, School } from 'lucide-react';
 
 export default function AppFooter() {
     return (

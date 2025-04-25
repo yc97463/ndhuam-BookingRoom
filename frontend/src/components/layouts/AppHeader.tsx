@@ -2,7 +2,6 @@
 import React from 'react';
 import RoomSelector from '../RoomSelector';
 import DateNavigator from '../date/DateNavigator';
-import RefreshButton from '../RefreshButton';
 import { SystemHeaderProps } from '@/types';
 import { Bolt, Building2, CalendarDays, RefreshCcw } from 'lucide-react';
 
