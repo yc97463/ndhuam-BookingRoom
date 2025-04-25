@@ -10,6 +10,7 @@ import BookingForm from "@/components/BookingForm";
 import LoadingMask from "@/components/LoadingMask";
 import { BookingDataProps, BookingSystemProps, Room } from '@/types';
 import AppFooter from '@/components/layouts/AppFooter';
+import { Calendar, Info } from 'lucide-react';
 
 // API 基礎 URL
 const API_URL = `/api`;
@@ -155,24 +156,32 @@ const BookingSystem = () => {
 
         {/* Booking form modal */}
         {showBookingForm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30">
-            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              {/* Close button */}
-              {/* <button
-                onClick={() => setShowBookingForm(false)}
-                className="absolute top-0 right-0 pt-4 pr-4 pb-6 pl-6 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-bl-full shadow-md transition-all duration-200 ease-in-out cursor-pointer hover:bg-gray-100 hover:pl-5 hover:pb-5 hover:pt-3 hover:pr-3"
-              >
-                <X size={24} />
-              </button> */}
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-40 backdrop-blur-sm" onClick={() => setShowBookingForm(false)}>
+            <div
+              className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl mx-4 border border-gray-100"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="mb-6">
-                <h2 className="text-xl font-bold mb-4">預約申請</h2>
-                <div className="bg-white p-4 border rounded mb-4">
-                  <h3 className="font-bold mb-2">預約說明</h3>
-                  <ul className="list-disc pl-5 mb-3">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 flex items-center justify-center bg-blue-500 text-white rounded-lg shadow-sm">
+                    <Calendar size={20} className="text-white/90" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">預約申請</h2>
+                    <p className="text-sm text-gray-500">請填寫以下資訊完成申請</p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100">
+                  <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                    <Info size={18} />
+                    預約說明
+                  </h3>
+                  <ul className="list-disc pl-5 mb-3 text-sm text-blue-700 space-y-1">
                     <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 系辦領鑰匙🔑</li>
                     <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
                   </ul>
-                  <p>使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-500 hover:underline">03-8903513</a> 聯絡應數系辦。</p>
+                  <p className="text-sm text-blue-700">使用系統時若有任何問題，請電洽 <a href="tel:03-8903513" className="text-blue-600 font-medium hover:underline">03-8903513</a> 聯絡應數系辦。</p>
                 </div>
               </div>
 
@@ -187,11 +196,10 @@ const BookingSystem = () => {
               />
             </div>
           </div>
-        )
-        }
-      </div >
+        )}
+      </div>
       <AppFooter />
-    </div >
+    </div>
   );
 };
 

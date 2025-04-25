@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { BookingFormProps } from "@/types";
+import { User, Building, Phone, Mail, FileText, School, AlertCircle } from 'lucide-react';
 
 export default function BookingForm({
     selectedSlots,
@@ -68,104 +69,118 @@ export default function BookingForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
-                <h3 className="font-bold text-blue-800">多時段預約</h3>
-                <p className="text-blue-600">您已選擇 {selectedSlots.length} 個時段進行預約</p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                    {selectedSlots.map((slot, index) => (
-                        <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                            {slot.date} {slot.time}-{slot.endTime || ""}
-                        </span>
-                    ))}
-                </div>
-            </div> */}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="name" className="font-semibold">姓名：</label>
+                    <label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                        <User size={15} className="text-gray-400" />
+                        申請人姓名
+                    </label>
                     <input
                         id="name"
                         name="name"
                         placeholder="請輸入您的姓名"
                         required
-                        className="border p-2 w-full rounded"
+                        className="border border-gray-200 p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="organization" className="font-semibold">單位 / 系級：</label>
+                    <label htmlFor="organization" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                        <Building size={15} className="text-gray-400" />
+                        單位 / 系級
+                    </label>
                     <input
                         id="organization"
                         name="organization"
                         placeholder="請輸入您的單位或系級"
                         required
-                        className="border p-2 w-full rounded"
+                        className="border border-gray-200 p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="phone" className="font-semibold">聯絡電話：</label>
+                    <label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                        <Phone size={15} className="text-gray-400" />
+                        聯絡電話
+                    </label>
                     <input
                         id="phone"
                         name="phone"
                         placeholder="請輸入您的聯絡電話"
                         required
-                        className="border p-2 w-full rounded"
+                        className="border border-gray-200 p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                 </div>
-
             </div>
 
             <div className="flex flex-col gap-2">
-                <label htmlFor="email" className="font-semibold">電子郵件：</label>
+                <label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <Mail size={15} className="text-gray-400" />
+                    電子郵件
+                </label>
                 <input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="請輸入東華大學校園信箱"
                     required
-                    className="border p-2 w-full rounded"
+                    className="border border-gray-200 p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 />
-                <small className="text-gray-500">必須使用 @ndhu.edu.tw 或 @gms.ndhu.edu.tw 信箱</small>
+                <div className="text-xs text-gray-500 ml-3">
+                    <li>提供東華教職員生借用，僅受理來自 @ndhu.edu.tw 或 @gms.ndhu.edu.tw 電子郵件的申請。</li>
+                    <li>若非東華大學教職員生借用，請聯絡應數系辦。</li>
+                </div>
             </div>
 
             <div className="flex flex-col gap-2">
-                <label htmlFor="purpose" className="font-semibold">預約用途：</label>
+                <label htmlFor="purpose" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <FileText size={15} className="text-gray-400" />
+                    預約用途
+                </label>
                 <textarea
                     id="purpose"
                     name="purpose"
                     placeholder="請詳細說明使用空間的目的"
                     rows={3}
                     required
-                    className="border p-2 w-full rounded"
+                    className="border border-gray-200 p-2.5 w-full rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 ></textarea>
             </div>
 
             <div className="flex flex-col gap-2">
-                <label className="font-semibold">預約教室：</label>
-                <p className="p-2 bg-gray-100 rounded">
-                    {(roomId && roomName) ? `${roomId} ${roomName}` : selectedRoom}
-                </p>
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <School size={15} className="text-gray-400" />
+                    預約教室
+                </label>
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg">
+                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md font-medium text-sm">
+                        {roomId}
+                    </span>
+                    <span className="text-gray-700">
+                        {roomName}
+                    </span>
+                </div>
             </div>
 
             {errorMessage && (
-                <div className="text-red-600 font-medium p-2 bg-red-50 border border-red-200 rounded">
-                    {errorMessage}
+                <div className="flex items-center gap-2 text-red-600 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <AlertCircle size={18} className="text-red-500" />
+                    <span>{errorMessage}</span>
                 </div>
             )}
 
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-3 mt-2">
                 <button
                     type="submit"
-                    className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors cursor-pointer"
+                    className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer shadow-sm flex-1 md:flex-none"
                 >
                     確認預約 ({selectedSlots.length} 個時段)
                 </button>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-6 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                     取消
                 </button>
