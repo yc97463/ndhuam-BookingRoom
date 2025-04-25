@@ -33,7 +33,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                                         {slots.length}
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-500">點擊展開或收合時段列表</p>
+                                <p className="text-xs text-gray-500">點此展開或收合時段列表</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -92,7 +92,7 @@ const SelectedSlots = ({ slots, onRemoveSlot, onClearAll, onProceed }: SelectedS
                                                         <span className="text-sm text-gray-700">{slot.time}-{slot.endTime}</span>
                                                     </div>
                                                     <button
-                                                        className="opacity-60 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                        className="opacity-60 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-all cursor-pointer"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             onRemoveSlot(slotIndex);
