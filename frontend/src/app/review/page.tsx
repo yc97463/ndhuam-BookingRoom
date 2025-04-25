@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { Loader2, X, Copy, Check, Save, CheckCheck, Hourglass } from 'lucide-react';
+import { Loader2, X, Copy, Check, Save, CheckCheck, Hourglass, Mail, Phone } from 'lucide-react';
 import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
 
 const API_URL = `/api`;
@@ -361,104 +361,159 @@ function ReviewContent() {
     });
 
     return (
-        <div className="container mx-auto p-4">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">空間申請審核列表</h1>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setFilter('pending')}
-                        className={`px-4 py-2 rounded-full cursor-pointer flex items-center gap-1 justify-center
-                             ${filter === 'pending'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-200 text-gray-700'
-                            }`}
-                    >
-                        <Hourglass size={15} />
-                        待審核
-                    </button>
-                    <button
-                        onClick={() => setFilter('reviewed')}
-                        className={`px-4 py-2 rounded-full cursor-pointer flex items-center gap-1 justify-center
-                             ${filter === 'reviewed'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-200 text-gray-700'
-                            }`}
-                    >
-                        <CheckCheck size={20} />
-                        已處理
-                    </button>
+        <div className="container mx-auto p-4 max-w-5xl">
+            <div className="mb-8 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800">空間申請審核</h1>
+                        <p className="text-gray-500 text-sm mt-1">管理所有的空間預約申請，審核或查看歷史紀錄</p>
+                    </div>
+                    <div className="bg-gray-50 p-1 rounded-lg border border-gray-200 flex">
+                        <button
+                            onClick={() => setFilter('pending')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'pending'
+                                ? 'bg-white text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                        >
+                            <div className="flex items-center gap-1.5 cursor-pointer">
+                                <Hourglass size={14} />
+                                <span>待審核</span>
+                                {applications.filter(app => app.status === 'pending').length > 0 && (
+                                    <span className="flex items-center justify-center h-5 min-w-5 px-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                        {applications.filter(app => app.status === 'pending').length}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setFilter('reviewed')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'reviewed'
+                                ? 'bg-white text-blue-600 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                        >
+                            <div className="flex items-center gap-1.5 cursor-pointer">
+                                <CheckCheck size={14} />
+                                <span>已處理</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div className="space-y-4">
                 {filteredApplications.length === 0 && (
-                    <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow">
-                        <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 font-bold text-2xl mb-2">
-                            好讚，都完成了！
+                    <div className="bg-white border border-gray-100 rounded-xl p-10 text-center space-y-3 shadow-sm">
+                        <div className="w-16 h-16 bg-blue-50 rounded-full mx-auto flex items-center justify-center">
+                            <CheckCheck size={28} className="text-blue-500" />
+                        </div>
+                        <p className="text-lg font-medium text-gray-700">
+                            {filter === 'pending' ? '目前沒有待審核的申請' : '還沒有已處理的申請'}
                         </p>
-                        <p className="text-gray-500">目前沒有符合條件的申請</p>
+                        <p className="text-gray-500 max-w-md mx-auto">
+                            {filter === 'pending'
+                                ? '所有的申請都已審核完畢，可以切換到「已處理」查看歷史紀錄。'
+                                : '審核完成的申請將會顯示在這裡，方便您查看歷史紀錄。'}
+                        </p>
                     </div>
                 )}
+
                 {filteredApplications.map(app => (
                     <div
                         key={app.id}
                         onClick={() => setSelectedApp(app)}
-                        className="flex justify-between items-center p-4 bg-white rounded-lg shadow hover:shadow-md cursor-pointer"
+                        className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group"
                     >
-                        <div className="flex gap-4 flex-1">
-                            <div className="flex flex-col items-center justify-center px-4 py-2 bg-gray-50 rounded-lg">
-                                <span className="text-xs text-gray-500">申請編號</span>
-                                <span className="text-lg font-bold text-gray-700">#{app.id}</span>
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h3 className="font-medium">{app.name}</h3>
-                                    <span className="text-sm text-gray-500">{app.organization}</span>
+                        <div className={`absolute top-0 left-0 w-1 h-full ${app.status === 'pending' ? 'bg-yellow-400' :
+                            app.status === 'confirmed' ? 'bg-green-500' : 'bg-red-500'
+                            }`}></div>
+
+                        <div className="flex gap-4 ml-2">
+                            <div className="shrink-0">
+                                <div className="bg-gray-50/80 border border-gray-100 rounded-lg p-3 text-center w-16">
+                                    <div className="text-xs text-gray-500 uppercase">申請</div>
+                                    <div className="text-xl font-bold text-gray-800">#{app.id}</div>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="px-2.5 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-md font-medium">
-                                        {app.room_id}
+                            </div>
+
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h3 className="font-medium text-lg">{app.name}</h3>
+                                    <span className="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                                        {app.organization}
+                                    </span>
+                                    <span className={`ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        ${app.status === 'pending'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : app.status === 'confirmed'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
+                                        }`}
+                                    >
+                                        {app.status === 'pending' ? '待審核' :
+                                            app.status === 'confirmed' ? '已同意' : '已拒絕'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">借用空間</div>
+                                        <div className="flex items-center">
+                                            <div className="px-2.5 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded font-medium text-sm">
+                                                {app.room_id}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="h-1 w-1 rounded-full bg-gray-300" />
-                                    {app.requested_slots.length > 0 ? (
-                                        [...new Set(app.requested_slots.map(slot => slot.date))]
-                                            .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-                                            .map(date => {
-                                                const dateObj = new Date(date);
-                                                const month = dateObj.getMonth() + 1;
-                                                const day = dateObj.getDate();
-                                                const weekday = ['日', '一', '二', '三', '四', '五', '六'][dateObj.getDay()];
-                                                return (
-                                                    <div
-                                                        key={date}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md text-gray-700"
-                                                    >
-                                                        <span className="text-xs text-gray-500">{month}/{day}</span>
-                                                        <span className="text-sm font-medium">週{weekday}</span>
-                                                    </div>
-                                                );
-                                            })
-                                    ) : (
-                                        <span className="text-sm text-gray-500">無時段資料</span>
-                                    )}
+
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">聯絡方式</div>
+                                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                                            <div className="flex items-center gap-1">
+                                                <Mail size={14} className="text-gray-400" />
+                                                <span>{app.email.split('@')[0]}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Phone size={14} className="text-gray-400" />
+                                                <span>{app.phone || '-'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-3">
+                                    <div className="text-xs text-gray-500 mb-1">預約日期</div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {app.requested_slots.length > 0 ? (
+                                            [...new Set(app.requested_slots.map(slot => slot.date))]
+                                                .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+                                                .map(date => {
+                                                    const dateObj = new Date(date);
+                                                    const month = dateObj.getMonth() + 1;
+                                                    const day = dateObj.getDate();
+                                                    const weekday = ['日', '一', '二', '三', '四', '五', '六'][dateObj.getDay()];
+                                                    return (
+                                                        <div
+                                                            key={date}
+                                                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded text-gray-700 text-sm"
+                                                        >
+                                                            <span>{month}月{day}日</span>
+                                                            <span className="text-xs text-gray-500">週{weekday}</span>
+                                                        </div>
+                                                    );
+                                                })
+                                        ) : (
+                                            <span className="text-sm text-gray-400">無時段資料</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right shrink-0 pl-4">
-                            <p className="text-sm text-gray-500 mb-1">
-                                申請時間：{new Date(app.submitted_at).toLocaleDateString()}
-                            </p>
-                            <p className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium
-                                ${app.status === 'pending'
-                                    ? 'bg-yellow-50 text-yellow-700'
-                                    : app.status === 'confirmed'
-                                        ? 'bg-green-50 text-green-700'
-                                        : 'bg-red-50 text-red-700'
-                                }`}
-                            >
-                                {app.status === 'pending' ? '待審核' :
-                                    app.status === 'confirmed' ? '已同意' : '已拒絕'}
-                            </p>
+
+                        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium">
+                                查看詳細資訊
+                            </div>
                         </div>
                     </div>
                 ))}
