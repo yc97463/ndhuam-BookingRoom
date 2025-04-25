@@ -4,7 +4,7 @@ import RoomSelector from '../RoomSelector';
 import DateNavigator from '../date/DateNavigator';
 import RefreshButton from '../RefreshButton';
 import { SystemHeaderProps } from '@/types';
-import { Building2, CalendarDays, RefreshCcw } from 'lucide-react';
+import { Bolt, Building2, CalendarDays, RefreshCcw } from 'lucide-react';
 
 const SystemHeader = ({
     rooms,
@@ -35,11 +35,11 @@ const SystemHeader = ({
             {/* Form controls */}
             <div className="p-5">
                 {roomsError ? (
-                    <div className="flex items-center justify-center px-4 py-3 bg-red-50 text-red-700 rounded-lg border border-red-100">
+                    <div className="flex items-center justify-start px-4 py-3 bg-red-50 text-red-700 rounded-lg border border-red-100">
                         <span className="text-sm">無法載入空間資訊</span>
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex flex-col md:flex-row gap-4">
                         <div className="space-y-2">
                             <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                 <Building2 size={14} className="text-gray-400" />
@@ -64,7 +64,11 @@ const SystemHeader = ({
                             />
                         </div>
 
-                        <div className="flex items-end">
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                                <Bolt size={14} className="text-gray-400" />
+                                操作
+                            </label>
                             <button
                                 onClick={() => onRefresh()}
                                 disabled={isRefreshing}
