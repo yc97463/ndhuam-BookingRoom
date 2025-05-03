@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Printer, CheckCheck, X, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
-import '@fontsource/noto-sans-tc/400.css';
-import '@fontsource/noto-sans-tc/700.css';
 
 interface RequestedSlot {
     id: number;
@@ -90,7 +88,7 @@ export default function PrintPage({ params }: { params: { id: string } }) {
     });
 
     return (
-        <div className="max-w-4xl mx-auto p-8 print:p-4 font-['Noto_Sans_TC']">
+        <div className="max-w-4xl mx-auto p-8 print:p-4">
             <div className="mb-8 print:hidden flex items-center justify-start gap-4">
                 <Link href={`/review`}>
                     <button

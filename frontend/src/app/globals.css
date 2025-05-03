@@ -29,21 +29,7 @@ body {
 @tailwind utilities;
 
 @layer base {
-  @font-face {
-    font-family: 'Noto Sans TC';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url('@fontsource/noto-sans-tc/files/noto-sans-tc-latin-400-normal.woff2') format('woff2');
-  }
-
-  @font-face {
-    font-family: 'Noto Sans TC';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url('@fontsource/noto-sans-tc/files/noto-sans-tc-latin-700-normal.woff2') format('woff2');
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@200..900&display=swap');
 }
 
 @media print {
