@@ -129,7 +129,7 @@ export default function BookingForm({
                 />
                 <div className="text-xs text-gray-500 ml-3">
                     <li>提供東華教職員生借用，僅受理來自 @ndhu.edu.tw 或 @gms.ndhu.edu.tw 電子郵件的申請。</li>
-                    <li>若非東華大學教職員生借用，請聯絡應數系辦。</li>
+                    <li>如果您是校外人士欲借用此系統管理的空間，請聯絡應數系辦。</li>
                 </div>
             </div>
 
