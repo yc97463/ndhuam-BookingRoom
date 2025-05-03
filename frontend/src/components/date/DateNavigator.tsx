@@ -18,6 +18,12 @@ const DateNavigator = ({ selectedDate, onChange, onAdjust }: DateNavigatorProps)
             <DateSelector selectedDate={selectedDate} onChange={onChange} />
             <button
                 className="border border-gray-300 px-3 py-2 rounded cursor-pointer hover:bg-gray-100"
+                onClick={() => onChange(new Date().toISOString().split('T')[0])}
+            >
+                今日
+            </button>
+            <button
+                className="border border-gray-300 px-3 py-2 rounded cursor-pointer hover:bg-gray-100"
                 onClick={() => onAdjust(7)}
             >
                 +7
