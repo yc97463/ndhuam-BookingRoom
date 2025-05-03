@@ -68,6 +68,7 @@ export interface RoomSelectorProps {
     rooms: Room[];
     selectedRoom: string;
     onSelect: (roomId: string) => void;
+    onClearSlots: () => void;
 }
 
 export interface DateSelectorProps {

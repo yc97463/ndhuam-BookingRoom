@@ -14,8 +14,9 @@ const SystemHeader = ({
     onDateChange,
     onDateAdjust,
     onRefresh,
-    isRefreshing
-}: SystemHeaderProps) => {
+    isRefreshing,
+    onClearSlots
+}: SystemHeaderProps & { onClearSlots: () => void }) => {
     return (
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm mb-6 overflow-hidden">
             {/* Header with gradient */}
@@ -48,6 +49,7 @@ const SystemHeader = ({
                                 rooms={rooms || []}
                                 selectedRoom={selectedRoom}
                                 onSelect={onRoomSelect}
+                                onClearSlots={onClearSlots}
                             />
                         </div>
 

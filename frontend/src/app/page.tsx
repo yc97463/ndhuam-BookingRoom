@@ -128,6 +128,7 @@ const BookingSystem = () => {
           onDateAdjust={adjustDate}
           onRefresh={() => refreshSchedule(undefined, { revalidate: true })}
           isRefreshing={isLoading}
+          onClearSlots={() => setSelectedSlots([])}
         />
 
         <div className="overflow-x-auto">
