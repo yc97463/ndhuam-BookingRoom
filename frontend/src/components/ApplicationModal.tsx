@@ -118,7 +118,7 @@ export default function ApplicationModal({ application, onClose, onReview }: {
 
     const handlePrint = () => {
         if (!application) return;
-        router.push(`/review/${application.id}`);
+        router.push(`/review/print?id=${application.id}`);
     };
 
     if (!application) return null;
