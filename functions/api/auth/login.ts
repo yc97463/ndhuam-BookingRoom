@@ -7,7 +7,6 @@ interface LoginRequest {
 
 interface LoginResponse {
     message: string;
-    temp_token: string;
 }
 
 interface ErrorResponse {
@@ -42,36 +41,37 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
         console.log("Verification URL:", verifyUrl);
 
-        // Send email using Cloudflare Email Workers
-        await fetch('https://api.mailchannels.net/tx/v1/send', {
+        const GAS_EMAIL_API_URL = env.GAS_EMAIL_API_URL;
+
+        const emailResponse = await fetch(GAS_EMAIL_API_URL, {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                from: {
-                    email: "noreply@ndhuam.edu.tw",
-                    name: "NDHU AM Room Booking"
-                },
-                to: [{ email: payload.email }],
-                subject: "登入驗證連結 - NDHU AM Room Booking",
-                content: [{
-                    type: "text/plain",
-                    value: `請按這裡以下連結登入系統：\n\n${verifyUrl}\n\n此連結將在 10 分鐘後失效。`
-                }]
+                templateKey: 'LOGIN_MAGIC_LINK',
+                to: payload.email,
+                templateData: {
+                    loginLink: verifyUrl,
+                    expiryTime: '10 分鐘'
+                }
             })
         });
 
-        const response: LoginResponse = {
-            message: "Please check your email for verification link",
-            temp_token: verifyToken
+        const emailResult = await emailResponse.json() as { success: boolean; message?: string; error?: string };
+        if (!emailResult.success) {
+            throw new Error(emailResult.message || 'Failed to send email');
+        }
+
+        const loginResponse: LoginResponse = {
+            message: "Please check your email for verification link"
         };
 
-        return new Response(JSON.stringify(response), {
+        return new Response(JSON.stringify(loginResponse), {
             headers: { 'Content-Type': 'application/json' },
             status: 200
         });
     } catch (err) {
         const error: ErrorResponse = {
-            error: "Internal Server Error",
+            error: "Internal Server Error" + err,
             code: "SERVER_ERROR"
         };
         return new Response(JSON.stringify(error), {

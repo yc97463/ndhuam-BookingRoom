@@ -10,7 +10,6 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
-    const [temp_token, setTempToken] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +27,6 @@ export default function LoginPage() {
             if (response.ok) {
                 setStatus('success');
                 setMessage('驗證信已發送至您的信箱，請檢查信箱並使用連結進行登入。');
-                setTempToken(data.temp_token);
             } else {
                 setStatus('error');
                 setMessage(data.error || '發送驗證信失敗');
@@ -62,14 +60,6 @@ export default function LoginPage() {
                                     <p className="font-medium text-green-800">驗證信已發送</p>
                                 </div>
                                 <p className="mb-3">{message}</p>
-                                {temp_token && (
-                                    <Link
-                                        href={`/auth/callback?token=${temp_token}`}
-                                        className="block mt-4 bg-orange-600 text-white py-2 px-4 rounded-lg text-center hover:bg-green-700 transition-colors"
-                                    >
-                                        請暫時按此登入系統
-                                    </Link>
-                                )}
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className="space-y-5">
