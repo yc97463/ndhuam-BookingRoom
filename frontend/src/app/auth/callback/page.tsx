@@ -21,7 +21,7 @@ function CallbackContent() {
     return (
         <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
-                <p className="text-lg">驗證成功，正在重導向...</p>
+                <p className="text-lg">驗證成功，正在重新導向...</p>
             </div>
         </div>
     );
