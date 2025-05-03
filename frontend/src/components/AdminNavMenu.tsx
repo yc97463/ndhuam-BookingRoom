@@ -32,7 +32,7 @@ export default function AdminNavMenu() {
     ];
 
     return (
-        <nav className="bg-white border-b">
+        <nav className="bg-white border-b print:hidden">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between">
                     <div className="flex gap-4">

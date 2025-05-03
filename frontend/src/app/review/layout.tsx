@@ -19,7 +19,7 @@ export default function ReviewLayout({
     }, [router]);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 print:bg-white">
             <AdminNavMenu />
             <main>
                 {children}

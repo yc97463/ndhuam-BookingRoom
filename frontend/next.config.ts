@@ -5,7 +5,6 @@ console.log('💡 NEXT CONFIG ENV', process.env.NODE_ENV, 'rewrites enabled?', i
 
 
 const nextConfig: NextConfig = {
-  output: "export",
   images: {
     unoptimized: true, // GitHub Pages 不支援 Next.js 圖片最佳化，必須關閉
   },
