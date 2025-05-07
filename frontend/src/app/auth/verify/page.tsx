@@ -1,21 +1,12 @@
 "use client";
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { AlertTriangle, CheckCircle, Loader2, LogIn } from 'lucide-react';
 import Turnstile from '@/components/Turnstile';
 import useSWR from 'swr';
 
 const API_URL = `/api`;
-
-// Add custom animation styles
-const fadeAnimation = {
-    animation: 'fade 2s ease-in-out infinite',
-    '@keyframes fade': {
-        '0%, 100%': { opacity: 0.4 },
-        '50%': { opacity: 1 }
-    }
-};
 
 const fetcher = async (url: string, token: string, turnstileToken: string) => {
     const response = await fetch(url, {
@@ -39,7 +30,7 @@ function VerifyContent() {
     const [turnstileToken, setTurnstileToken] = useState<string>('');
     const [adminInfo, setAdminInfo] = useState<{ name: string } | null>(null);
 
-    const { data, error, isLoading } = useSWR(
+    const { data, error } = useSWR(
         token && turnstileToken ? [`${API_URL}/auth/verify`, token, turnstileToken] : null,
         ([url, token, turnstileToken]) => fetcher(url, token, turnstileToken),
         {

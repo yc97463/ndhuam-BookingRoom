@@ -5,15 +5,6 @@ import { BookingFormProps } from "@/types";
 import { User, Building, Phone, Mail, FileText, School, AlertCircle } from 'lucide-react';
 import Turnstile from './Turnstile';
 
-declare global {
-    interface Window {
-        turnstile: {
-            render: (container: string | HTMLElement, options: any) => string;
-            reset: (widgetId: string) => void;
-        };
-    }
-}
-
 export default function BookingForm({
     selectedSlots,
     // selectedDate,

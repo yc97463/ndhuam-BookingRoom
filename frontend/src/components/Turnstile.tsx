@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+
+interface TurnstileOptions {
+    sitekey: string;
+    callback: (token: string) => void;
+    'error-callback'?: () => void;
+}
+
+interface TurnstileInstance {
+    render: (container: string | HTMLElement, options: TurnstileOptions) => string;
+    reset: (widgetId: string) => void;
+}
 
 declare global {
     interface Window {
-        turnstile: {
-            render: (container: string | HTMLElement, options: any) => string;
-            reset: (widgetId: string) => void;
-        };
+        turnstile: TurnstileInstance;
     }
 }
 
@@ -20,6 +28,18 @@ interface TurnstileProps {
 export const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onVerify, onError }) => {
     const [widgetId, setWidgetId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
+
+    const reset = useCallback(() => {
+        if (widgetId && window.turnstile) {
+            window.turnstile.reset(widgetId);
+            setIsLoading(true);
+        }
+    }, [widgetId]);
+
+    const handleError = useCallback(() => {
+        reset();
+        if (onError) onError();
+    }, [reset, onError]);
 
     useEffect(() => {
         const initTurnstile = () => {
@@ -38,16 +58,12 @@ export const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onVerify, onError
                             onVerify(token);
                             setIsLoading(false);
                         },
-                        'error-callback': () => {
-                            if (onError) onError();
-                            setIsLoading(false);
-                        },
+                        'error-callback': handleError,
                     });
                     setWidgetId(id);
                 } catch (error) {
                     console.error('Turnstile initialization error:', error);
-                    if (onError) onError();
-                    setIsLoading(false);
+                    handleError();
                 }
             }
         };
@@ -67,14 +83,16 @@ export const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onVerify, onError
             // 清理定時器
             return () => clearInterval(checkTurnstile);
         }
-    }, [siteKey, onVerify, onError]);
+    }, [siteKey, onVerify, handleError]);
 
-    const reset = () => {
-        if (widgetId && window.turnstile) {
-            window.turnstile.reset(widgetId);
-            setIsLoading(true);
-        }
-    };
+    // 組件卸載時清理
+    useEffect(() => {
+        return () => {
+            if (widgetId && window.turnstile) {
+                window.turnstile.reset(widgetId);
+            }
+        };
+    }, [widgetId]);
 
     return (
         <div className="flex justify-center">
