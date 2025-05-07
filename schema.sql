@@ -70,6 +70,23 @@ CREATE INDEX idx_slots_application ON requested_slots(application_id);
 CREATE INDEX idx_slots_room_date ON requested_slots(room_id, date);
 CREATE INDEX idx_slots_status ON requested_slots(status);
 
+-- 建立已確認預約表
+CREATE TABLE booked_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL,
+    room_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(id),
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id)
+);
+
+-- 建立已確認預約表索引
+CREATE INDEX idx_booked_slots_application ON booked_slots(application_id);
+CREATE INDEX idx_booked_slots_room_date ON booked_slots(room_id, date);
+
 -- 建立管理員表
 CREATE TABLE IF NOT EXISTS admins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
