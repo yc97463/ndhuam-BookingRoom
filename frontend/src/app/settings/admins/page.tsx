@@ -182,9 +182,9 @@ export default function AdminsPage() {
                                     key={admin.tempId || admin.id}
                                     className="bg-white border border-gray-200 rounded-lg p-4 transition-all hover:shadow-sm"
                                 >
-                                    <div className="flex items-start gap-3 mb-3">
-                                        <div className="flex-1 grid grid-cols-2 gap-4">
-                                            <div>
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                                            <div className="flex-1">
                                                 <label className="block text-xs font-medium text-gray-500 mb-1">電子郵件</label>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -203,7 +203,7 @@ export default function AdminsPage() {
                                                     <p className="mt-1 text-sm text-red-500">{formErrors[`${index}-email`]}</p>
                                                 )}
                                             </div>
-                                            <div>
+                                            <div className="flex-1">
                                                 <label className="block text-xs font-medium text-gray-500 mb-1">姓名</label>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -223,25 +223,31 @@ export default function AdminsPage() {
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-start gap-2">
-                                            <button
-                                                onClick={() => updateAdmin(index, { isActive: !admin.isActive })}
-                                                className={`h-[42px] px-3 py-2 rounded-lg text-sm min-w-[5rem] font-medium transition-colors cursor-pointer ${admin.isActive
-                                                    ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                {admin.isActive ? '啟用中' : '已停用'}
-                                            </button>
-                                            <button
-                                                onClick={() => updateAdmin(index, { notifyReview: !admin.notifyReview })}
-                                                className={`h-[42px] px-3 py-2 rounded-lg text-sm min-w-[5rem] font-medium transition-colors cursor-pointer ${admin.notifyReview
-                                                    ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                                    }`}
-                                            >
-                                                {admin.notifyReview ? '接收通知' : '不接收通知'}
-                                            </button>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="block text-xs font-medium text-gray-500">帳號狀態</label>
+                                                <button
+                                                    onClick={() => updateAdmin(index, { isActive: !admin.isActive })}
+                                                    className={`h-[42px] px-3 py-2 rounded-lg text-sm min-w-[5rem] font-medium transition-colors cursor-pointer ${admin.isActive
+                                                        ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        }`}
+                                                >
+                                                    {admin.isActive ? '啟用中' : '已停用'}
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <label className="block text-xs font-medium text-gray-500">信件通知</label>
+                                                <button
+                                                    onClick={() => updateAdmin(index, { notifyReview: !admin.notifyReview })}
+                                                    className={`h-[42px] px-3 py-2 rounded-lg text-sm min-w-[5rem] font-medium transition-colors cursor-pointer ${admin.notifyReview
+                                                        ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        }`}
+                                                >
+                                                    {admin.notifyReview ? '接收通知' : '不接收通知'}
+                                                </button>
+                                            </div>
                                             <button
                                                 onClick={() => removeAdmin(index)}
                                                 className="h-[42px] px-3 py-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
