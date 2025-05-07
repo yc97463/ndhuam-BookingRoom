@@ -26,7 +26,11 @@ export default function LoginPage() {
 
             if (response.ok) {
                 setStatus('success');
-                setMessage('驗證信已發送至您的信箱，請檢查信箱並使用連結進行登入。');
+                if (data.message === "Please check your email for verification link. You will receive a mail if you are the admins.") {
+                    setMessage('如果您的信箱為有效管理員信箱，將會收到一封驗證信，請檢查信箱並使用連結登入。');
+                } else {
+                    setMessage('驗證信已發送至您的信箱，請檢查信箱並使用連結進行登入。');
+                }
             } else {
                 setStatus('error');
                 setMessage(data.error || '發送驗證信失敗');

@@ -37,6 +37,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
+
+            // Check if the email is in the admins table
+            const { results: adminResults } = await env.DB.prepare(`
+                SELECT id FROM admins 
+                WHERE email = ? AND is_active = 1
+            `).bind(payload.email.toLowerCase()).all();
+
+            if (adminResults.length === 0) {
+                return new Response(JSON.stringify({
+                    error: 'Not authorized as admin',
+                    message: '此信箱未註冊為管理員或已被停用'
+                }), {
+                    status: 403,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
             const expiresIn = 24 * 60 * 60; // 24 hours
 
             const newToken = await sign(
