@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS admins (
     email TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     is_active INTEGER DEFAULT 1,
+    notify_review INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -109,5 +110,5 @@ END;
 CREATE INDEX idx_admins_email ON admins(email);
 
 -- 預設管理員資料
-INSERT INTO admins (email, name, is_active) VALUES
-  ('411111226@ndhu.edu.tw', '系統管理員', 1);
+INSERT INTO admins (email, name, is_active, notify_review) VALUES
+  ('411111226@ndhu.edu.tw', '系統管理員', 1, 1);

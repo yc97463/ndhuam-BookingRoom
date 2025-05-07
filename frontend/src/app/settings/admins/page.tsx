@@ -11,6 +11,7 @@ interface Admin {
     email: string;
     name: string;
     isActive: boolean;
+    notifyReview: boolean;
     tempId?: string;
 }
 
@@ -58,7 +59,8 @@ export default function AdminsPage() {
             tempId,
             email: '',
             name: '',
-            isActive: true
+            isActive: true,
+            notifyReview: true
         };
 
         mutateAdmins([...admins, newAdmin], false);
@@ -89,9 +91,15 @@ export default function AdminsPage() {
 
         setIsSaving(true);
         try {
+            // Filter out tempId and ensure isActive is a number
+            const adminsToSave = admins.map(({ tempId, ...admin }) => ({
+                ...admin,
+                isActive: admin.isActive ? 1 : 0
+            }));
+
             const response = await fetchWithAuth('/api/admin/admins', {
                 method: 'POST',
-                body: JSON.stringify({ admins })
+                body: JSON.stringify({ admins: adminsToSave })
             });
 
             await handleApiResponse(response, router);
@@ -224,6 +232,15 @@ export default function AdminsPage() {
                                                     }`}
                                             >
                                                 {admin.isActive ? '啟用中' : '已停用'}
+                                            </button>
+                                            <button
+                                                onClick={() => updateAdmin(index, { notifyReview: !admin.notifyReview })}
+                                                className={`h-[42px] px-3 py-2 rounded-lg text-sm min-w-[5rem] font-medium transition-colors cursor-pointer ${admin.notifyReview
+                                                    ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                {admin.notifyReview ? '接收通知' : '不接收通知'}
                                             </button>
                                             <button
                                                 onClick={() => removeAdmin(index)}

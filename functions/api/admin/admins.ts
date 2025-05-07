@@ -6,6 +6,7 @@ interface Admin {
     email: string;
     name: string;
     isActive: boolean;
+    notifyReview: boolean;
 }
 
 const validateAdmin = (admin: Admin): { isValid: boolean; errors: string[] } => {
@@ -51,7 +52,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
                 id,
                 email,
                 name,
-                is_active as "isActive"
+                is_active as "isActive",
+                notify_review as "notifyReview"
             FROM admins 
             ORDER BY created_at DESC
         `).all();
@@ -127,28 +129,28 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         // Prepare statement for updating or inserting admins
         const stmt = env.DB.prepare(`
             INSERT OR REPLACE INTO admins (
-                id,
                 email,
                 name,
-                is_active
+                is_active,
+                notify_review
             ) VALUES (?, ?, ?, ?)
         `);
 
         // Create batch operations
         const batch = admins.map(admin =>
             stmt.bind(
-                admin.id || null,
                 admin.email.toLowerCase(),
                 admin.name,
-                admin.isActive ? 1 : 0
+                admin.isActive ? 1 : 0,
+                admin.notifyReview ? 1 : 0
             )
         );
 
         // Find admins to be deleted (not in new list but existing in DB)
-        const newAdminIds = new Set(admins.map(a => a.id).filter(Boolean));
+        const newEmails = new Set(admins.map(a => a.email.toLowerCase()));
         const deleteStmt = env.DB.prepare(`
             DELETE FROM admins 
-            WHERE id NOT IN (${Array.from(newAdminIds).join(',') || '0'})
+            WHERE email NOT IN (${Array.from(newEmails).map(e => `'${e}'`).join(',') || "'none'"})
         `);
 
         // Execute all operations
