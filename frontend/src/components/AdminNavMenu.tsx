@@ -39,31 +39,35 @@ export default function AdminNavMenu() {
     return (
         <nav className="bg-white border-b print:hidden">
             <div className="container mx-auto px-4">
-                <div className="flex justify-between">
-                    <div className="flex gap-4">
-                        {menuItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer
-                                    ${pathname === item.href
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
-                            >
-                                <item.icon size={16} />
-                                {item.label}
-                            </Link>
-                        ))}
+                <div className="flex justify-between items-center">
+                    <div className="flex-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                        <div className="flex gap-4">
+                            {menuItems.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex items-center gap-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer
+                                        ${pathname === item.href
+                                            ? 'border-blue-500 text-blue-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <item.icon size={16} />
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-1 px-4 py-3 text-sm font-medium text-red-500 hover:text-red-700 transition-colors cursor-pointer
-                            border-b-2 border-transparent hover:border-red-300"
-                    >
-                        <LogOut size={16} />
-                        登出
-                    </button>
+                    <div className="flex-shrink-0">
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-1 px-4 py-3 text-sm font-medium text-red-500 hover:text-red-700 transition-colors cursor-pointer
+                                border-b-2 border-transparent hover:border-red-300  shadow-[-2px_0_4px_-1px_rgba(0,0,0,0.1)]"
+                        >
+                            <LogOut size={16} />
+                            登出
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
