@@ -3,6 +3,7 @@ import { Env } from '../../env'
 
 interface LoginRequest {
     email: string;
+    turnstileToken: string;
 }
 
 interface LoginResponse {
@@ -20,9 +21,55 @@ const randomDelay = (min: number, max: number) => {
     return new Promise(resolve => setTimeout(resolve, delay));
 };
 
+// 驗證 Turnstile token
+async function verifyTurnstileToken(token: string, env: Env): Promise<boolean> {
+    try {
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                secret: env.TURNSTILE_SECRET_KEY,
+                response: token,
+            }),
+        });
+
+        const result = await response.json() as { success: boolean };
+        return result.success === true;
+    } catch (error) {
+        console.error('Turnstile verification error:', error);
+        return false;
+    }
+}
+
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
         const payload = await request.json() as LoginRequest;
+
+        // 驗證 Turnstile token
+        if (!payload.turnstileToken) {
+            const error: ErrorResponse = {
+                error: "Missing Turnstile token",
+                code: "MISSING_TURNSTILE"
+            };
+            return new Response(JSON.stringify(error), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const isValidToken = await verifyTurnstileToken(payload.turnstileToken, env);
+        if (!isValidToken) {
+            const error: ErrorResponse = {
+                error: "Invalid Turnstile token",
+                code: "INVALID_TURNSTILE"
+            };
+            return new Response(JSON.stringify(error), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
         if (!payload.email?.endsWith('ndhu.edu.tw')) {
             const error: ErrorResponse = {
@@ -42,8 +89,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         `).bind(payload.email.toLowerCase()).all();
 
         const isAdmin = adminResults.length > 0;
-
-
 
         // Always return the same message regardless of admin status
         const loginResponse: LoginResponse = {

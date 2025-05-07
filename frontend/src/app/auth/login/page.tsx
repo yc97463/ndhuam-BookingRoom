@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ArrowLeft, Loader2, Mail, Shield, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, Shield, CheckCircle, Send } from 'lucide-react';
 import Link from 'next/link';
+import Turnstile from '@/components/Turnstile';
 
 const API_URL = `/api`;
 
@@ -10,16 +11,27 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
+    const [turnstileToken, setTurnstileToken] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('loading');
 
+        // 檢查 Turnstile token
+        if (!turnstileToken) {
+            setStatus('error');
+            setMessage('請完成人機驗證');
+            return;
+        }
+
         try {
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({
+                    email,
+                    turnstileToken
+                })
             });
 
             const data = await response.json();
@@ -31,14 +43,19 @@ export default function LoginPage() {
                 } else {
                     setMessage('驗證信已發送至您的信箱，請檢查信箱並使用連結進行登入。');
                 }
+                // 重置表單
+                setEmail('');
+                setTurnstileToken('');
             } else {
                 setStatus('error');
                 setMessage(data.error || '發送驗證信失敗');
+                setTurnstileToken('');
             }
         } catch (err) {
             console.log(err);
             setStatus('error');
             setMessage('系統錯誤，請稍後再試');
+            setTurnstileToken('');
         }
     };
 
@@ -90,6 +107,12 @@ export default function LoginPage() {
                                     </p>
                                 </div>
 
+                                <Turnstile
+                                    siteKey="0x4AAAAAABbGMDA-o4GXTrWo"
+                                    onVerify={setTurnstileToken}
+                                    onError={() => setTurnstileToken('')}
+                                />
+
                                 {status === 'error' && (
                                     <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
                                         {message}
@@ -98,7 +121,7 @@ export default function LoginPage() {
 
                                 <button
                                     type="submit"
-                                    disabled={status === 'loading'}
+                                    disabled={status === 'loading' || !turnstileToken}
                                     className="w-full bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 
                                          disabled:bg-blue-300 flex items-center justify-center cursor-pointer shadow-sm transition-colors"
                                 >
@@ -108,7 +131,19 @@ export default function LoginPage() {
                                             <span>發送中...</span>
                                         </div>
                                     ) : (
-                                        <span>發送驗證信</span>
+                                        <span>
+                                            {!turnstileToken ? (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Loader2 className="animate-spin" size={18} />
+                                                    <span>機器人驗證中...</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Send size={18} />
+                                                    <span>發送驗證信</span>
+                                                </div>
+                                            )}
+                                        </span>
                                     )}
                                 </button>
                             </form>
