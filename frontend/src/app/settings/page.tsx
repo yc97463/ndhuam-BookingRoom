@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Loader2, GripVertical, Plus, Trash2, Save, Settings as SettingsIcon, Building } from 'lucide-react';
 import type { Room } from '@/types/room';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,7 @@ export default function SettingsPage() {
     const [nextTempId, setNextTempId] = useState(1);
     const router = useRouter();
 
-    const fetchRooms = async () => {
+    const fetchRooms = useCallback(async () => {
         try {
             const response = await fetchWithAuth('/api/admin/rooms');
             const data = await handleApiResponse(response, router);
@@ -24,11 +24,11 @@ export default function SettingsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [router]);
 
     useEffect(() => {
         fetchRooms();
-    }, []);
+    }, [fetchRooms]);
 
     const addRoom = () => {
         const tempId = `TEMP-${nextTempId}`;

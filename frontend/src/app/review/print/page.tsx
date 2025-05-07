@@ -1,13 +1,12 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import PrintPage from './PrintPage';
+import { Suspense } from 'react';
+import ReviewPrintInner from './ReviewPrintInner';
 
 export default function ReviewPrint() {
-    const searchParams = useSearchParams();
-    const id = searchParams.get('id');
-
-    if (!id) return <p>❌ 缺少 id 參數</p>;
-
-    return <PrintPage params={{ id }} />;
+    return (
+        <Suspense fallback={<p>載入中...</p>}>
+            <ReviewPrintInner />
+        </Suspense>
+    );
 }
