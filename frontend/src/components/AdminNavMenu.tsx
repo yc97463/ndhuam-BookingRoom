@@ -25,7 +25,7 @@ export default function AdminNavMenu() {
             icon: ClipboardList
         },
         {
-            href: '/spaces',
+            href: '/settings/spaces',
             label: '空間管理',
             icon: DoorOpen
         },
