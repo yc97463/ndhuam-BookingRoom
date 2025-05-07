@@ -111,4 +111,5 @@ CREATE INDEX idx_admins_email ON admins(email);
 
 -- 預設管理員資料
 INSERT INTO admins (email, name, is_active, notify_review) VALUES
-  ('411111226@ndhu.edu.tw', '系統管理員', 1, 1);
+  ('411111226@ndhu.edu.tw', '油成', 1, 1),
+  ('ya@ndhu.edu.tw', '雅蓉姊姊', 1, 1);
