@@ -317,39 +317,30 @@ ${slotsInfo}`,
                 ).all();
 
                 if (activeAdmins && activeAdmins.length > 0) {
-                    // 為每個管理員發送通知
-                    const adminNotifications = activeAdmins.map(admin =>
-                        fetch(GAS_EMAIL_API_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                templateKey: 'ADMIN_REVIEW_REMINDER',
-                                to: admin.email,
-                                templateData: {
-                                    applicationId: applicationId.toString(),
-                                    applicantName: data.name,
-                                    organization: data.organization || '未填寫',
-                                    submissionTime: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-                                    applicationSpace: roomId,
-                                    reviewLink: `${env.APP_URL}/review`
-                                }
-                            })
+                    // 使用 CC 一次發送給所有管理員
+                    const adminEmails = activeAdmins.map(admin => admin.email);
+
+                    const adminEmailResponse = await fetch(GAS_EMAIL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            templateKey: 'ADMIN_REVIEW_REMINDER',
+                            to: '', // 收件者為空
+                            cc: adminEmails.join(','), // 使用 CC 發送給所有管理員
+                            templateData: {
+                                applicationId: applicationId.toString(),
+                                applicantName: data.name,
+                                organization: data.organization || '未填寫',
+                                submissionTime: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                                applicationSpace: roomId,
+                                reviewLink: `${env.APP_URL}/review`
+                            }
                         })
-                    );
+                    });
 
-                    // 等待所有郵件發送完成
-                    const adminEmailResults = await Promise.all(adminNotifications);
-                    const adminEmailResponses = await Promise.all(
-                        adminEmailResults.map(r => r.json() as Promise<{ success: boolean; message?: string; error?: string }>)
-                    );
-
-                    // 檢查是否有發送失敗的郵件
-                    const failedEmails = adminEmailResponses
-                        .filter((result, index) => !result.success)
-                        .map((_, index) => activeAdmins[index].email);
-
-                    if (failedEmails.length > 0) {
-                        console.error('Failed to send notification emails to some admins:', failedEmails);
+                    const adminEmailResult = await adminEmailResponse.json() as { success: boolean; message?: string; error?: string };
+                    if (!adminEmailResult.success) {
+                        console.error('Failed to send admin notification email:', adminEmailResult.message || 'Unknown error');
                     }
                 }
             } catch (adminEmailError) {

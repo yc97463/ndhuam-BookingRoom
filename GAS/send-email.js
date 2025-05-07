@@ -474,7 +474,7 @@ const EMAIL_TEMPLATES = {
 };
 
 // 寄送郵件函數
-function sendEmail(to, templateKey, templateData) {
+function sendEmail(to, templateKey, templateData, cc = '') {
   try {
     const template = EMAIL_TEMPLATES[templateKey];
     if (!template) {
@@ -499,7 +499,8 @@ function sendEmail(to, templateKey, templateData) {
       {
         name: '東華應數系空間借用系統',
         // noReply: true,
-        htmlBody: body
+        htmlBody: body,
+        cc: cc // 加入 CC 收件者
       }
     );
 
@@ -671,15 +672,20 @@ function doPost(e) {
     }
 
     // 驗證必要欄位
-    if (!data.templateKey || !data.to || !data.templateData) {
+    if (!data.templateKey || !data.templateData) {
       return createResponse(400, {
         success: false,
-        message: 'Missing required fields: templateKey, to, templateData'
+        message: 'Missing required fields: templateKey, templateData'
       });
     }
 
-    // 驗證 email 網域
-    if (!data.to.endsWith('ndhu.edu.tw')) {
+    // 驗證 email 網域（如果有提供 to 或 cc）
+    const validateEmail = (email) => {
+      if (!email) return true;
+      return email.split(',').every(e => e.trim().endsWith('ndhu.edu.tw'));
+    };
+
+    if (!validateEmail(data.to) || !validateEmail(data.cc)) {
       return createResponse(400, {
         success: false,
         message: 'Invalid email domain',
@@ -689,9 +695,10 @@ function doPost(e) {
 
     // 寄送郵件
     const result = sendEmail(
-      data.to,
+      data.to || '',
       data.templateKey,
-      data.templateData
+      data.templateData,
+      data.cc || ''
     );
 
     if (result) {
