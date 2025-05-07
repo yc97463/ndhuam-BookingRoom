@@ -92,7 +92,7 @@ export default function AdminsPage() {
         setIsSaving(true);
         try {
             // Filter out tempId and ensure isActive is a number
-            const adminsToSave = admins.map(({ tempId, ...admin }) => ({
+            const adminsToSave = admins.map(({ ...admin }) => ({
                 ...admin,
                 isActive: admin.isActive ? 1 : 0
             }));
