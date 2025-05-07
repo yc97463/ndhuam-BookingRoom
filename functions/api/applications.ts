@@ -311,7 +311,7 @@ ${slotsInfo}`,
 
             // 發送通知郵件給啟用的管理員
             try {
-                // 獲取所有啟用且開啟通知的管理員
+                // 取得所有啟用且開啟通知的管理員
                 const { results: activeAdmins } = await env.DB.prepare(
                     `SELECT email, name FROM admins WHERE is_active = 1 AND notify_review = 1`
                 ).all();

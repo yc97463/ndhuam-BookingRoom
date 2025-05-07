@@ -26,7 +26,7 @@ const BookingSystem = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
 
-  // SWR API 獲取部分
+  // SWR API 取得部分
   const { data: rooms, error: roomsError, isLoading: roomsLoading } = useSWR(`${API_URL}/rooms`, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 600000
