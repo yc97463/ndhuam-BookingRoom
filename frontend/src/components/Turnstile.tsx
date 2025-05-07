@@ -95,8 +95,15 @@ export const Turnstile: React.FC<TurnstileProps> = ({ siteKey, onVerify, onError
     }, [widgetId]);
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center gap-4">
             <div id="turnstile-container" className={isLoading ? 'opacity-50' : ''} />
+            <button
+                onClick={reset}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+                type="button"
+            >
+                重設驗證
+            </button>
         </div>
     );
 };
