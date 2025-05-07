@@ -260,6 +260,42 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         const slotResults = await env.DB.batch(slotInserts);
         console.log('Created slots:', slotResults.map(r => r.meta.lastRowId));
 
+        // 發送確認郵件給申請者
+        const GAS_EMAIL_API_URL = env.GAS_EMAIL_API_URL;
+        try {
+            // 格式化申請時段資訊
+            const slotsInfo = data.multipleSlots.map(slot => {
+                const startHour = parseInt(slot.time.split(':')[0]);
+                const endHour = (startHour + 1) % 24;
+                const startTime = `${String(startHour).padStart(2, '0')}:00`;
+                const endTime = `${String(endHour).padStart(2, '0')}:00`;
+                return `${slot.date} ${startTime}-${endTime}`;
+            }).join('\n');
+
+            const emailResponse = await fetch(GAS_EMAIL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    templateKey: 'APPLICANT_SUBMISSION',
+                    to: data.email,
+                    templateData: {
+                        applicantName: data.name,
+                        applicationId: applicationId.toString(),
+                        applicationDetails: `申請場地：${roomId}\n申請時段：\n${slotsInfo}`,
+                        contactInfo: '系辦電話：03-890-3111\nEmail：am@ndhu.edu.tw'
+                    }
+                })
+            });
+
+            const emailResult = await emailResponse.json() as { success: boolean; message?: string; error?: string };
+            if (!emailResult.success) {
+                console.error('Failed to send confirmation email:', emailResult.message || 'Unknown error');
+            }
+        } catch (emailError) {
+            console.error('Email sending error:', emailError);
+            // 不中斷流程，繼續回傳成功訊息
+        }
+
         // 產生驗證 token
         const verifyToken = await sign(
             {
