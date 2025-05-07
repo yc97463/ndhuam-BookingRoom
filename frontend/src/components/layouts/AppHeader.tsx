@@ -26,7 +26,10 @@ const SystemHeader = ({
                         <Building2 size={20} />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold text-gray-900">空間預約系統</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-lg font-bold text-gray-900">空間預約系統</h1>
+                            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">Beta</span>
+                        </div>
                         <p className="text-sm text-gray-500">應用數學系</p>
                     </div>
                 </div>
