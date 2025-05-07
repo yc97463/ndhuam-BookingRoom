@@ -15,6 +15,7 @@ interface BookingRequest {
     phone: string;
     purpose: string;
     multipleSlots: BookingSlot[];
+    turnstileToken: string;
 }
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
@@ -128,9 +129,53 @@ async function checkSlotAvailability(env: Env, slots: BookingSlot[]): Promise<{ 
     return { available: true };
 }
 
+// 驗證 Turnstile token
+async function verifyTurnstileToken(token: string, env: Env): Promise<boolean> {
+    try {
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                secret: env.TURNSTILE_SECRET_KEY,
+                response: token,
+            }),
+        });
+
+        const result = await response.json() as { success: boolean };
+        return result.success === true;
+    } catch (error) {
+        console.error('Turnstile verification error:', error);
+        return false;
+    }
+}
+
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
         const data = await request.json() as BookingRequest;
+
+        // 驗證 Turnstile token
+        if (!data.turnstileToken) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing Turnstile token'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const isValidToken = await verifyTurnstileToken(data.turnstileToken, env);
+        if (!isValidToken) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Invalid Turnstile token'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
         if (!data.multipleSlots?.length) {
             return new Response(JSON.stringify({

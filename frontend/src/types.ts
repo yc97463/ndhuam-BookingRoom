@@ -20,6 +20,7 @@ export interface BookingDataProps {
     timeSlot: string;
     roomId: string;
     purpose: string;
+    turnstileToken?: string;
     multipleSlots: Array<{
         date: string;
         time: string;

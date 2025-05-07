@@ -3,6 +3,16 @@
 import React, { useState } from "react";
 import { BookingFormProps } from "@/types";
 import { User, Building, Phone, Mail, FileText, School, AlertCircle } from 'lucide-react';
+import Turnstile from './Turnstile';
+
+declare global {
+    interface Window {
+        turnstile: {
+            render: (container: string | HTMLElement, options: any) => string;
+            reset: (widgetId: string) => void;
+        };
+    }
+}
 
 export default function BookingForm({
     selectedSlots,
@@ -14,10 +24,17 @@ export default function BookingForm({
     onSubmit
 }: BookingFormProps) {
     const [errorMessage, setErrorMessage] = useState("");
+    const [turnstileToken, setTurnstileToken] = useState("");
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setErrorMessage("");
+
+        // Check if Turnstile token is present
+        if (!turnstileToken) {
+            setErrorMessage('請完成人機驗證');
+            return;
+        }
 
         const form = event.target as HTMLFormElement;
 
@@ -28,7 +45,8 @@ export default function BookingForm({
             email: (form.elements.namedItem('email') as HTMLInputElement).value,
             phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
             purpose: (form.elements.namedItem('purpose') as HTMLTextAreaElement).value,
-            roomId: selectedRoom
+            roomId: selectedRoom,
+            turnstileToken: turnstileToken
         };
 
         // 檢查是否有選擇時段
@@ -64,7 +82,8 @@ export default function BookingForm({
             purpose: userData.purpose,
             roomId: userData.roomId,
             date: selectedSlots[0].date,
-            timeSlot: selectedSlots[0].time
+            timeSlot: selectedSlots[0].time,
+            turnstileToken: userData.turnstileToken
         });
     };
 
@@ -161,6 +180,20 @@ export default function BookingForm({
                         {roomName}
                     </span>
                 </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    人機驗證
+                </label>
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg">
+                    <Turnstile
+                        siteKey="0x4AAAAAABbGMDA-o4GXTrWo"
+                        onVerify={setTurnstileToken}
+                        onError={() => setTurnstileToken('')}
+                    />
+                </div>
+
             </div>
 
             {errorMessage && (
