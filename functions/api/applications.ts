@@ -290,6 +290,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                         applicantName: data.name,
                         applicationId: applicationId.toString(),
                         applicationSpace: roomId,
+                        organization: data.organization || '未填寫',
                         applicationDetails: `申請人：${data.name}
 申請單位：${data.organization || '未填寫'}
 聯絡電話：${data.phone || '未填寫'}
@@ -306,6 +307,54 @@ ${slotsInfo}`,
             const emailResult = await emailResponse.json() as { success: boolean; message?: string; error?: string };
             if (!emailResult.success) {
                 console.error('Failed to send confirmation email:', emailResult.message || 'Unknown error');
+            }
+
+            // 發送通知郵件給啟用的管理員
+            try {
+                // 獲取所有啟用的管理員
+                const { results: activeAdmins } = await env.DB.prepare(
+                    `SELECT email, name FROM admins WHERE is_active = 1`
+                ).all();
+
+                if (activeAdmins && activeAdmins.length > 0) {
+                    // 為每個管理員發送通知
+                    const adminNotifications = activeAdmins.map(admin =>
+                        fetch(GAS_EMAIL_API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                templateKey: 'ADMIN_REVIEW_REMINDER',
+                                to: admin.email,
+                                templateData: {
+                                    applicationId: applicationId.toString(),
+                                    applicantName: data.name,
+                                    organization: data.organization || '未填寫',
+                                    submissionTime: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+                                    applicationSpace: roomId,
+                                    reviewLink: `${env.APP_URL}/review`
+                                }
+                            })
+                        })
+                    );
+
+                    // 等待所有郵件發送完成
+                    const adminEmailResults = await Promise.all(adminNotifications);
+                    const adminEmailResponses = await Promise.all(
+                        adminEmailResults.map(r => r.json() as Promise<{ success: boolean; message?: string; error?: string }>)
+                    );
+
+                    // 檢查是否有發送失敗的郵件
+                    const failedEmails = adminEmailResponses
+                        .filter((result, index) => !result.success)
+                        .map((_, index) => activeAdmins[index].email);
+
+                    if (failedEmails.length > 0) {
+                        console.error('Failed to send notification emails to some admins:', failedEmails);
+                    }
+                }
+            } catch (adminEmailError) {
+                console.error('Admin notification email sending error:', adminEmailError);
+                // 不中斷流程，繼續執行
             }
         } catch (emailError) {
             console.error('Email sending error:', emailError);

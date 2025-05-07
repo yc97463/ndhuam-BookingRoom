@@ -96,7 +96,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             try {
                 // 取得申請者資訊
                 const { results: [application] } = await env.DB.prepare(`
-                    SELECT name, email, purpose, room_id
+                    SELECT name, email, purpose, organization, room_id
                     FROM applications 
                     WHERE id = ?
                 `).bind(applicationId).all();
@@ -135,6 +135,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                                 applicantName: application.name,
                                 applicationId: applicationId.toString(),
                                 applicationSpace: application.room_id,
+                                organization: application.organization,
                                 reviewStatus: applicationStatus === 'confirmed' ? '已核准' : '已駁回',
                                 reviewComment: note || '無',
                                 approvedSlots: approvedSlots || '無核准時段',

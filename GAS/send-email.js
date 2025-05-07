@@ -4,7 +4,7 @@
 const EMAIL_TEMPLATES = {
   // 申請者相關信件
   APPLICANT_SUBMISSION: {
-    subject: `【東華應數系空間借用系統】 #{applicationId} 「{applicationSpace}」借用申請已送出（編號：{applicationId}，空間：{applicationSpace}）`,
+    subject: `【東華應數系空間借用系統】 #{applicationId} 「{applicationSpace}」申請審核中（申請編號：{applicationId}，空間：{applicationSpace}）`,
     body: `
 <!DOCTYPE html>
 <html>
@@ -74,13 +74,13 @@ const EMAIL_TEMPLATES = {
 </head>
 <body>
   <div class="header">
-    <h2>東華應數系空間借用申請已送出（編號：{applicationId}，空間：{applicationSpace}）</h2>
+    <h2>東華應數系空間借用 / 申請審核中（申請編號：{applicationId}，空間：{applicationSpace}）</h2>
   </div>
 
   <div class="content">
-    <p>親愛的 {applicantName} 您好：</p>
+    <p>{organization} {applicantName} 您好：</p>
     
-    <p>您已申請借用東華應數系空間借用空間，系所將收到通知，請稍等系所審核。</p>
+    <p>您申請借用東華應數系管理的空間，系辦將收到通知，請稍等系辦審核。</p>
     
     <div class="section">
       <div class="section-title">申請資訊</div>
@@ -96,13 +96,13 @@ const EMAIL_TEMPLATES = {
     </div>
 
     <div class="section">
-      <div class="section-title">後續步驟</div>
+      <div class="section-title">接下來的步驟</div>
       <p>系統將於系辦審核完成後，以信件通知您結果。</p>
     </div>
   </div>
 
   <div class="footer">
-    <p>如有任何問題，請聯繫系辦：<br>
+    <p>如有任何問題，請聯絡系辦：<br>
     {contactInfo}</p>
     
     <p>應用數學系空間借用系統 https://ndhuam-booking.pages.dev/ </p>
@@ -118,7 +118,7 @@ const EMAIL_TEMPLATES = {
 
   // 管理者相關信件
   ADMIN_REVIEW_REMINDER: {
-    subject: '【東華應數系空間借用系統】待審核申請通知',
+    subject: '【東華應數系空間借用系統】新申請待審核通知',
     body: `
 <!DOCTYPE html>
 <html>
@@ -185,7 +185,7 @@ const EMAIL_TEMPLATES = {
 </head>
 <body>
   <div class="header">
-    <h2>待審核申請通知</h2>
+    <h2>新申請待審核（編號：{applicationId}，空間：{applicationSpace}）</h2>
   </div>
 
   <div class="content">
@@ -196,6 +196,7 @@ const EMAIL_TEMPLATES = {
       <div class="application-info">
         <p>申請編號：{applicationId}</p>
         <p>申請人：{applicantName}</p>
+        <p>申請單位：{organization}</p>
         <p>送件時間：{submissionTime}</p>
         <p>申請空間：{applicationSpace}</p>
       </div>
@@ -203,7 +204,7 @@ const EMAIL_TEMPLATES = {
 
     <div class="section">
       <div class="section-title">審核操作</div>
-      <p>請點擊下方按鈕前往審核：</p>
+      <p>請使用下方按鈕前往審核：</p>
       <a href="{reviewLink}" class="review-button">前往後台審核</a>
     </div>
   </div>
@@ -287,24 +288,20 @@ const EMAIL_TEMPLATES = {
 </head>
 <body>
   <div class="header">
-    <h2>東華應數系空間借用申請審核結果通知（編號：{applicationId}，空間：{applicationSpace}）</h2>
+    <h2>東華應數系空間借用 / 申請審核結果通知（編號：{applicationId}，空間：{applicationSpace}）</h2>
   </div>
 
   <div class="content">
-    <p>親愛的 {applicantName} 您好：</p>
+    <p>{organization} {applicantName} 您好：</p>
     
-    <p>您的東華應數系空間借用申請（編號：{applicationId}）審核結果如下：</p>
+    <p>您申請借用東華應數系管理的空間（申請編號：{applicationId}）審核結果如下：
 
     <hr />
 
     <div class="section">
       <div class="section-title">申請時段明細</div>
-      <p>
-        申請時段明細如下：
-        <ul>
-          <li>申請空間：{applicationSpace}</li>
-        </ul>
-      </p>
+      <p>申請編號：<span class="status">{applicationId}</span></p>
+      <p>申請空間：<span class="status">{applicationSpace}</span></p>
       
       <div class="approved-slots">
         <strong>已核准時段：</strong><br>
@@ -318,13 +315,13 @@ const EMAIL_TEMPLATES = {
     </div>
 
     <div class="section">
-      <div class="section-title">後續步驟</div>
+      <div class="section-title">接下來的步驟</div>
       {nextSteps}
     </div>
   </div>
 
   <div class="footer">
-    <p>如有任何問題，請聯繫系辦：<br>
+    <p>如有任何問題，請聯絡系辦：<br>
     {contactInfo}</p>
 
     <p>應用數學系空間借用系統 https://ndhuam-booking.pages.dev/ </p>
@@ -413,7 +410,7 @@ const EMAIL_TEMPLATES = {
     <p>您好：</p>
 
     <div class="section">
-      <div class="section-title">本次登入資訊</div>
+      <div class="section-title">登入資訊</div>
       <p>
         本次登入資訊如下：
         <ul>
@@ -456,24 +453,24 @@ const EMAIL_TEMPLATES = {
   },
 
   // 新增每日彙整通知模板
-  DAILY_SUMMARY: {
-    subject: '【東華應數系空間借用系統】每日申請彙整報告',
-    body: `
-管理員您好：
+  //   DAILY_SUMMARY: {
+  //     subject: '【東華應數系空間借用系統】每日申請彙整報告',
+  //     body: `
+  // 管理員您好：
 
-以下是今日（{date}）的東華應數系空間借用申請彙整：
+  // 以下是今日（{date}）的東華應數系空間借用申請彙整：
 
-待審核申請：{pendingCount} 筆
-{applicationsList}
+  // 待審核申請：{pendingCount} 筆
+  // {applicationsList}
 
-今日核准申請：{approvedCount} 筆
-今日駁回申請：{rejectedCount} 筆
+  // 今日核准申請：{approvedCount} 筆
+  // 今日駁回申請：{rejectedCount} 筆
 
-請至系統查看詳細資訊：{systemLink}
+  // 請至系統查看詳細資訊：{systemLink}
 
-此為系統自動發送信件，請勿直接回覆。
-`
-  }
+  // 此為系統自動發送信件，請勿直接回覆。
+  // `
+  //   }
 };
 
 // 寄送郵件函數
@@ -501,7 +498,7 @@ function sendEmail(to, templateKey, templateData) {
       body,
       {
         name: '東華應數系空間借用系統',
-        noReply: true,
+        // noReply: true,
         htmlBody: body
       }
     );
