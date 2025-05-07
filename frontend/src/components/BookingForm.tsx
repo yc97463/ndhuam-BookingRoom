@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { BookingFormProps } from "@/types";
-import { User, Building, Phone, Mail, FileText, School, AlertCircle } from 'lucide-react';
+import { User, Building, Phone, Mail, FileText, School, AlertCircle, Bot } from 'lucide-react';
 import Turnstile from './Turnstile';
 
 export default function BookingForm({
@@ -175,6 +175,7 @@ export default function BookingForm({
 
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <Bot size={15} className="text-gray-400" />
                     人機驗證
                 </label>
                 <div className="flex items-center gap-2 p-2.5 bg-gray-50 border border-gray-200 rounded-lg">
