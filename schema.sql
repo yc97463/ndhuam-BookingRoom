@@ -1,6 +1,7 @@
 -- schema.sql
 
 -- 先刪除有外鍵參照的表
+DROP TABLE IF EXISTS booked_slots;
 DROP TABLE IF EXISTS requested_slots;
 DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS rooms;
