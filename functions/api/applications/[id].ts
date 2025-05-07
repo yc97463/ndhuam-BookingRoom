@@ -43,13 +43,27 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env, params })
         const app = apps[0];
 
         // 查詢 slots
-        const { results: slots } = await env.DB.prepare(
+        const { results: requestedSlots } = await env.DB.prepare(
             `SELECT * FROM requested_slots WHERE application_id = ?`
         ).bind(id).all();
 
+        // 查詢已確認的時段
+        const { results: bookedSlots } = await env.DB.prepare(
+            `SELECT * FROM booked_slots WHERE application_id = ?`
+        ).bind(id).all();
+
+        // 合併時段資訊
+        const allSlots = [
+            ...requestedSlots,
+            ...bookedSlots.map(slot => ({
+                ...slot,
+                status: 'confirmed' // 已確認的時段狀態固定為 confirmed
+            }))
+        ];
+
         return new Response(JSON.stringify({
             ...app,
-            requested_slots: slots
+            requested_slots: allSlots
         }), {
             headers: { "Content-Type": "application/json" },
         });

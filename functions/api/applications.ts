@@ -44,10 +44,26 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         // 對每個 application 撈出對應時段
         const withSlots = await Promise.all(
             applications.results.map(async (app) => {
-                const { results: slots } = await env.DB.prepare(
+                // 撈出請求的時段
+                const { results: requestedSlots } = await env.DB.prepare(
                     `SELECT * FROM requested_slots WHERE application_id = ?`
                 ).bind(app.id).all();
-                return { ...app, requested_slots: slots };
+
+                // 撈出已確認的時段
+                const { results: bookedSlots } = await env.DB.prepare(
+                    `SELECT * FROM booked_slots WHERE application_id = ?`
+                ).bind(app.id).all();
+
+                // 合併時段資訊
+                const allSlots = [
+                    ...requestedSlots,
+                    ...bookedSlots.map(slot => ({
+                        ...slot,
+                        status: 'confirmed' // 已確認的時段狀態固定為 confirmed
+                    }))
+                ];
+
+                return { ...app, requested_slots: allSlots };
             })
         );
 
@@ -64,6 +80,53 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         });
     }
 };
+
+// 檢查時段是否可用
+async function checkSlotAvailability(env: Env, slots: BookingSlot[]): Promise<{ available: boolean; conflictMessage?: string }> {
+    for (const slot of slots) {
+        const startHour = parseInt(slot.time.split(':')[0]);
+        const endHour = (startHour + 1) % 24;
+        const startTime = `${String(startHour).padStart(2, '0')}:00`;
+        const endTime = `${String(endHour).padStart(2, '0')}:00`;
+
+        // 檢查是否有正在審核中的申請
+        const pendingSlots = await env.DB.prepare(`
+            SELECT rs.*, a.status 
+            FROM requested_slots rs
+            JOIN applications a ON rs.application_id = a.id
+            WHERE rs.room_id = ? 
+            AND rs.date = ?
+            AND rs.start_time = ?
+            AND rs.end_time = ?
+            AND a.status = 'pending'
+        `).bind(slot.roomId, slot.date, startTime, endTime).all();
+
+        if (pendingSlots.results.length > 0) {
+            return {
+                available: false,
+                conflictMessage: `所選時段 ${slot.date} ${startTime}-${endTime} 已有其他申請正在審核中`
+            };
+        }
+
+        // 檢查是否已被預約
+        const bookedSlots = await env.DB.prepare(`
+            SELECT * FROM booked_slots
+            WHERE room_id = ? 
+            AND date = ?
+            AND start_time = ?
+            AND end_time = ?
+        `).bind(slot.roomId, slot.date, startTime, endTime).all();
+
+        if (bookedSlots.results.length > 0) {
+            return {
+                available: false,
+                conflictMessage: `所選時段 ${slot.date} ${startTime}-${endTime} 已被預約`
+            };
+        }
+    }
+
+    return { available: true };
+}
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
@@ -84,6 +147,18 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             return new Response(JSON.stringify({
                 success: false,
                 error: '請使用東華大學校園信箱'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // 檢查時段是否可用
+        const availabilityCheck = await checkSlotAvailability(env, data.multipleSlots);
+        if (!availabilityCheck.available) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: availabilityCheck.conflictMessage
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
