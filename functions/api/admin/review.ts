@@ -91,6 +91,70 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
             // 執行所有操作
             await env.DB.batch(operations);
 
+            // 發送審核結果通知郵件
+            const GAS_EMAIL_API_URL = env.GAS_EMAIL_API_URL;
+            try {
+                // 取得申請者資訊
+                const { results: [application] } = await env.DB.prepare(`
+                    SELECT name, email, purpose, room_id
+                    FROM applications 
+                    WHERE id = ?
+                `).bind(applicationId).all();
+
+                if (application) {
+                    // 取得申請的時段資訊
+                    const { results: slots } = await env.DB.prepare(`
+                        SELECT date, start_time, end_time, status
+                        FROM requested_slots
+                        WHERE application_id = ?
+                    `).bind(applicationId).all();
+
+                    // 分類並格式化時段資訊
+                    const approvedSlots = slots
+                        .filter(slot => slot.status === 'confirmed')
+                        .map(slot => `✓ ${slot.date} ${slot.start_time}-${slot.end_time}<br />`)
+                        .join('\n');
+
+                    const rejectedSlots = slots
+                        .filter(slot => slot.status === 'rejected')
+                        .map(slot => `✗ ${slot.date} ${slot.start_time}-${slot.end_time}<br />`)
+                        .join('\n');
+
+                    // 準備下一步指示
+                    const nextSteps = applicationStatus === 'confirmed'
+                        ? `您的申請已獲核准，請<a href="${env.APP_URL}">查看預約官網</a>確認借用流程，並於上班時間領取鑰匙🔑。`
+                        : '您的申請未獲核准，如有疑問請聯繫系辦。';
+
+                    const emailResponse = await fetch(GAS_EMAIL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            templateKey: 'REVIEW_RESULT',
+                            to: application.email,
+                            templateData: {
+                                applicantName: application.name,
+                                applicationId: applicationId.toString(),
+                                applicationSpace: application.room_id,
+                                reviewStatus: applicationStatus === 'confirmed' ? '已核准' : '已駁回',
+                                reviewComment: note || '無',
+                                approvedSlots: approvedSlots || '無核准時段',
+                                rejectedSlots: rejectedSlots || '無駁回時段',
+                                nextSteps: nextSteps,
+                                contactInfo: '系辦電話：03-890-3111\nEmail：am@ndhu.edu.tw'
+                            }
+                        })
+                    });
+
+                    const emailResult = await emailResponse.json() as { success: boolean; message?: string; error?: string };
+                    if (!emailResult.success) {
+                        console.error('Failed to send review result email:', emailResult.message || 'Unknown error');
+                    }
+                }
+            } catch (emailError) {
+                console.error('Email sending error:', emailError);
+                // 不中斷流程，繼續回傳成功訊息
+            }
+
             return new Response(JSON.stringify({
                 success: true,
                 message: '已更新申請狀態'

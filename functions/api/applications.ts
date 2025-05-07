@@ -264,13 +264,21 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         const GAS_EMAIL_API_URL = env.GAS_EMAIL_API_URL;
         try {
             // 格式化申請時段資訊
-            const slotsInfo = data.multipleSlots.map(slot => {
-                const startHour = parseInt(slot.time.split(':')[0]);
-                const endHour = (startHour + 1) % 24;
-                const startTime = `${String(startHour).padStart(2, '0')}:00`;
-                const endTime = `${String(endHour).padStart(2, '0')}:00`;
-                return `${slot.date} ${startTime}-${endTime}`;
-            }).join('\n');
+            const slotsInfo = data.multipleSlots
+                .map(slot => {
+                    const startHour = parseInt(slot.time.split(':')[0]);
+                    const endHour = (startHour + 1) % 24;
+                    const startTime = `${String(startHour).padStart(2, '0')}:00`;
+                    const endTime = `${String(endHour).padStart(2, '0')}:00`;
+                    return {
+                        date: slot.date,
+                        time: `${startTime}-${endTime}`,
+                        timestamp: new Date(`${slot.date}T${startTime}`).getTime()
+                    };
+                })
+                .sort((a, b) => a.timestamp - b.timestamp)
+                .map(slot => `${slot.date} ${slot.time}`)
+                .join('\n');
 
             const emailResponse = await fetch(GAS_EMAIL_API_URL, {
                 method: 'POST',
@@ -281,7 +289,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                     templateData: {
                         applicantName: data.name,
                         applicationId: applicationId.toString(),
-                        applicationDetails: `申請場地：${roomId}\n申請時段：\n${slotsInfo}`,
+                        applicationSpace: roomId,
+                        applicationDetails: `申請人：${data.name}
+申請單位：${data.organization || '未填寫'}
+聯絡電話：${data.phone || '未填寫'}
+使用目的：${data.purpose || '未填寫'}
+
+申請空間：${roomId}
+申請時段：
+${slotsInfo}`,
                         contactInfo: '系辦電話：03-890-3111\nEmail：am@ndhu.edu.tw'
                     }
                 })

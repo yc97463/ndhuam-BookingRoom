@@ -109,6 +109,35 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
             const GAS_EMAIL_API_URL = env.GAS_EMAIL_API_URL;
 
+            // 處理 IP 地址
+            const getClientIP = (request: Request): string => {
+                // 優先使用 X-Forwarded-For
+                const forwardedFor = request.headers.get('X-Forwarded-For');
+                if (forwardedFor) {
+                    // 取第一個 IP（最原始的客戶端 IP）
+                    const firstIP = forwardedFor.split(',')[0].trim();
+                    // 如果是 IPv6 的 localhost，返回 localhost
+                    if (firstIP === '::1') return 'localhost';
+                    return firstIP;
+                }
+
+                // 其次使用 CF-Connecting-IP
+                const cfIP = request.headers.get('CF-Connecting-IP');
+                if (cfIP) {
+                    if (cfIP === '::1') return 'localhost';
+                    return cfIP;
+                }
+
+                // 最後使用 X-Real-IP
+                const realIP = request.headers.get('X-Real-IP');
+                if (realIP) {
+                    if (realIP === '::1') return 'localhost';
+                    return realIP;
+                }
+
+                return '未知';
+            };
+
             try {
                 const emailResponse = await fetch(GAS_EMAIL_API_URL, {
                     method: 'POST',
@@ -118,7 +147,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
                         to: payload.email,
                         templateData: {
                             loginLink: verifyUrl,
-                            expiryTime: '10 分鐘'
+                            expiryTime: '10 分鐘',
+                            loginAccount: payload.email,
+                            loginTime: new Date().toLocaleString('zh-TW', {
+                                timeZone: 'Asia/Taipei',
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            }),
+                            loginIP: getClientIP(request),
+                            loginBrowser: request.headers.get('User-Agent') || '未知'
                         }
                     })
                 });

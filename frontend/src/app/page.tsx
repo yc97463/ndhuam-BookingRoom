@@ -179,7 +179,7 @@ const BookingSystem = () => {
                     預約說明
                   </h3>
                   <ul className="list-disc pl-5 mb-3 text-sm text-blue-700 space-y-1">
-                    <li>預約流程：申請預約（NOW） → 信箱驗證 → 系所審核 → 收到通知 → 上班時間領鑰匙🔑</li>
+                    <li>預約流程：申請預約（NOW） → 信箱收信 → 系所審核 → 收到通知 → 上班時間領鑰匙🔑</li>
                     <li>申請人限制：東華大學校內教職員工、學生，使用校園信箱驗證。</li>
                   </ul>
                   <p className="text-sm text-blue-700">使用系統時若有任何問題，請聯絡 <a href="https://am.ndhu.edu.tw/p/412-1038-17041.php?Lang=zh-tw" className="text-blue-600 font-medium hover:underline">應數系辦助理</a>。</p>
