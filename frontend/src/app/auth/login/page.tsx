@@ -135,7 +135,7 @@ export default function LoginPage() {
                                             {!turnstileToken ? (
                                                 <div className="flex items-center justify-center gap-2">
                                                     <Loader2 className="animate-spin" size={18} />
-                                                    <span>機器人驗證中...</span>
+                                                    <span>人機驗證中...</span>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-center gap-2">
