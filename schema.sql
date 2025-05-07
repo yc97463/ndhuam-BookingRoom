@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS requested_slots;
 DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS admins;
 
 -- 建立基礎表 rooms
 CREATE TABLE IF NOT EXISTS rooms (
@@ -68,3 +69,27 @@ CREATE TABLE requested_slots (
 CREATE INDEX idx_slots_application ON requested_slots(application_id);
 CREATE INDEX idx_slots_room_date ON requested_slots(room_id, date);
 CREATE INDEX idx_slots_status ON requested_slots(status);
+
+-- 建立管理員表
+CREATE TABLE IF NOT EXISTS admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add trigger for updated_at
+CREATE TRIGGER IF NOT EXISTS admins_update_timestamp 
+AFTER UPDATE ON admins
+BEGIN
+    UPDATE admins SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- Create index for email
+CREATE INDEX idx_admins_email ON admins(email);
+
+-- 預設管理員資料
+INSERT INTO admins (email, name, is_active) VALUES
+  ('411111226@ndhu.edu.tw', '系統管理員', 1);

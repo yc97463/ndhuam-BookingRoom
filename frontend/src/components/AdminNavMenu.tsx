@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, ClipboardList, Settings, LogOut } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Users, LogOut, DoorOpen } from 'lucide-react';
 
 export default function AdminNavMenu() {
     const pathname = usePathname();
@@ -25,9 +25,14 @@ export default function AdminNavMenu() {
             icon: ClipboardList
         },
         {
-            href: '/settings',
-            label: '系統設定',
-            icon: Settings
+            href: '/spaces',
+            label: '空間管理',
+            icon: DoorOpen
+        },
+        {
+            href: '/settings/admins',
+            label: '管理員管理',
+            icon: Users
         }
     ];
 

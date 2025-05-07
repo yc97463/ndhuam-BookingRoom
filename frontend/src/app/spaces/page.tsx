@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Loader2, GripVertical, Plus, Trash2, Save, Settings as SettingsIcon, Building } from 'lucide-react';
+import { Loader2, GripVertical, Plus, Trash2, Save, DoorOpen, Building } from 'lucide-react';
 import type { Room } from '@/types/room';
 import { useRouter } from 'next/navigation';
 import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
@@ -91,7 +91,7 @@ export default function SettingsPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-sm">
-                            <SettingsIcon size={20} />
+                            <DoorOpen size={20} />
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-gray-800">空間管理</h1>
