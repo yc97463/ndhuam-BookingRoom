@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Loader2, Plus, Trash2, Save, Users, Mail, User, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
+import useSWR from 'swr';
 
 interface Admin {
     id?: number;
@@ -19,13 +20,18 @@ interface AdminFormData {
 }
 
 export default function AdminsPage() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [admins, setAdmins] = useState<Admin[]>([]);
-    const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [nextTempId, setNextTempId] = useState(1);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const router = useRouter();
+
+    const fetcher = async (url: string) => {
+        const response = await fetchWithAuth(url);
+        const data = await handleApiResponse(response, router);
+        return data;
+    };
+
+    const { data: admins = [], error, isLoading, mutate: mutateAdmins } = useSWR<Admin[]>('/api/admin/admins', fetcher);
 
     const validateAdmin = (admin: AdminFormData): boolean => {
         const errors: Record<string, string> = {};
@@ -44,23 +50,6 @@ export default function AdminsPage() {
         return Object.keys(errors).length === 0;
     };
 
-    const fetchAdmins = useCallback(async () => {
-        try {
-            const response = await fetchWithAuth('/api/admin/admins');
-            const data = await handleApiResponse(response, router);
-            setAdmins(data);
-            setError(null);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : '載入管理員資料失敗');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [router]);
-
-    useEffect(() => {
-        fetchAdmins();
-    }, [fetchAdmins]);
-
     const addAdmin = () => {
         const tempId = `TEMP-${nextTempId}`;
         setNextTempId(prev => prev + 1);
@@ -71,13 +60,14 @@ export default function AdminsPage() {
             name: '',
             isActive: true
         };
-        setAdmins([...admins, newAdmin]);
+
+        mutateAdmins([...admins, newAdmin], false);
     };
 
     const updateAdmin = (index: number, updates: Partial<Admin>) => {
         const newAdmins = [...admins];
         newAdmins[index] = { ...newAdmins[index], ...updates };
-        setAdmins(newAdmins);
+        mutateAdmins(newAdmins, false);
 
         // Clear form errors when updating
         if (updates.email || updates.name) {
@@ -86,7 +76,7 @@ export default function AdminsPage() {
     };
 
     const removeAdmin = (index: number) => {
-        setAdmins(admins.filter((_, i) => i !== index));
+        mutateAdmins(admins.filter((_, i) => i !== index), false);
         setFormErrors({});
     };
 
@@ -105,10 +95,10 @@ export default function AdminsPage() {
             });
 
             await handleApiResponse(response, router);
-            await fetchAdmins();
-            setError(null);
+            await mutateAdmins();
+            setFormErrors({});
         } catch (err) {
-            setError(err instanceof Error ? err.message : '儲存失敗');
+            console.error('Save error:', err);
         } finally {
             setIsSaving(false);
         }
@@ -159,7 +149,7 @@ export default function AdminsPage() {
             {error && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
                     <AlertCircle className="text-red-500 mt-0.5" size={20} />
-                    <p className="text-red-700">{error}</p>
+                    <p className="text-red-700">{error.message || '載入管理員資料失敗'}</p>
                 </div>
             )}
 
