@@ -1,18 +1,39 @@
 import { verify, sign } from '@tsndr/cloudflare-worker-jwt'
 import { Env } from '../../env'
+import { verifyTurnstileToken } from '../../utils/turnstile'
+
+interface VerifyRequest {
+    token: string;
+    turnstileToken: string;
+}
 
 interface VerifyResponse {
     token: string;
     expiresIn: number;
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
-        const url = new URL(request.url);
-        const token = url.searchParams.get('token');
+        const { token, turnstileToken } = await request.json() as VerifyRequest;
 
         if (!token) {
             return new Response(JSON.stringify({ error: 'Missing token' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (!turnstileToken) {
+            return new Response(JSON.stringify({ error: 'Missing Turnstile token' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Verify Turnstile token
+        const isTurnstileValid = await verifyTurnstileToken(turnstileToken, env);
+        if (!isTurnstileValid) {
+            return new Response(JSON.stringify({ error: 'Invalid Turnstile token' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });
