@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,6 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
