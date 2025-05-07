@@ -1,34 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Loader2, GripVertical, Plus, Trash2, Save, DoorOpen, Building } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, GripVertical, Plus, Trash2, Save, DoorOpen, Building, AlertCircle } from 'lucide-react';
 import type { Room } from '@/types/room';
 import { useRouter } from 'next/navigation';
 import { fetchWithAuth, handleApiResponse } from '@/utils/handleApiResponse';
+import useSWR from 'swr';
 
 export default function SettingsPage() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [nextTempId, setNextTempId] = useState(1);
     const router = useRouter();
 
-    const fetchRooms = useCallback(async () => {
-        try {
-            const response = await fetchWithAuth('/api/admin/rooms');
-            const data = await handleApiResponse(response, router);
-            setRooms(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [router]);
+    const fetcher = async (url: string) => {
+        const response = await fetchWithAuth(url);
+        const data = await handleApiResponse(response, router);
+        return data;
+    };
 
-    useEffect(() => {
-        fetchRooms();
-    }, [fetchRooms]);
+    const { data: rooms = [], error, isLoading, mutate: mutateRooms } = useSWR<Room[]>('/api/admin/rooms', fetcher);
 
     const addRoom = () => {
         const tempId = `TEMP-${nextTempId}`;
@@ -43,29 +33,18 @@ export default function SettingsPage() {
             order: rooms.length,
             isActive: true
         };
-        setRooms([...rooms, newRoom]);
+        mutateRooms([...rooms, newRoom], false);
     };
 
     const updateRoom = (index: number, updates: Partial<Room>) => {
         const newRooms = [...rooms];
         newRooms[index] = { ...newRooms[index], ...updates };
-        setRooms(newRooms);
+        mutateRooms(newRooms, false);
     };
 
     const removeRoom = (index: number) => {
-        setRooms(rooms.filter((_, i) => i !== index));
+        mutateRooms(rooms.filter((_, i) => i !== index), false);
     };
-
-    // const moveRoom = (fromIndex: number, toIndex: number) => {
-    //     const newRooms = [...rooms];
-    //     const [movedRoom] = newRooms.splice(fromIndex, 1);
-    //     newRooms.splice(toIndex, 0, movedRoom);
-    //     // Update order values
-    //     newRooms.forEach((room, index) => {
-    //         room.order = index;
-    //     });
-    //     setRooms(newRooms);
-    // };
 
     const saveRooms = async () => {
         setIsSaving(true);
@@ -76,9 +55,9 @@ export default function SettingsPage() {
             });
 
             await handleApiResponse(response, router);
-            await fetchRooms();
+            await mutateRooms();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to save');
+            console.error('Save error:', err);
         } finally {
             setIsSaving(false);
         }
@@ -117,6 +96,13 @@ export default function SettingsPage() {
                     </button>
                 </div>
             </div>
+
+            {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="text-red-500 mt-0.5" size={20} />
+                    <p className="text-red-700">{error.message || '載入空間資料失敗'}</p>
+                </div>
+            )}
 
             {isLoading ? (
                 <div className="flex items-center justify-center min-h-[40vh]">
